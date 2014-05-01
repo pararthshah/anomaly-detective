@@ -1,0 +1,27 @@
+.header {
+	border-bottom:1px solid #e5e5e5;
+}
+
+#form-metric {
+	margin-top : 10px;
+	padding-bottom:15px;	
+	border-bottom:1px solid #e5e5e5;
+}
+
+.form-inline>div.form-group {
+	margin-right:20px;
+}
+
+#chart-container {
+	margin-top:25px;
+}
+
+#controls {
+	margin-top:15px;
+}
+
+/* Bootstrap overrides */
+.panel-heading {
+	font-size:18px;
+	font-weight:bold;
+}
