@@ -4,18 +4,19 @@
 		<title>Anomaly Detective</title>
 		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="css/main.css" />
-		<script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 		<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 		<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+		<script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 		<script src="//code.highcharts.com/stock/highstock.js"></script>
 
 		<!-- Move to main.js or something-->
 		<script type="text/javascript">
+			var metricChart;
+
 			$(document).ready(function() {
 				$(function() {
 
 					$.getJSON('http://www.highcharts.com/samples/data/jsonp.php?filename=large-dataset.json&callback=?', function(data) {
-
 						// Create a timer
 						var start = + new Date();
 
@@ -27,6 +28,7 @@
 										this.setTitle(null, {
 											text: 'Built chart in '+ (new Date() - start) +'ms'
 										});
+										metricChart = $("#chart-container").highcharts();
 									}
 								},
 								zoomType: 'x'
@@ -82,6 +84,14 @@
 								}]
 
 						});
+					});
+
+				});
+
+				$("#btn-get-metric").click(function() { 
+					// fetch data from server
+					$.getJSON("http://0.0.0.0:8080/data?machine=node1&metric=metric1", function(data) {
+						metricChart.series[0].setData(data);
 					});
 				});
 			});
