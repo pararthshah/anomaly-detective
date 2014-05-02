@@ -2,21 +2,19 @@
 
 import os, sys
 from read_folder import read_folder
+from read_timeseries import read_timeseries
 import json
 
 def convert(inpath, outpath):
 	if not os.path.exists(outpath):
 		os.makedirs(outpath)
-	flag= 0
+	index= 0
 	for (name, series) in read_folder(inpath):
+		print index
+		index+= 1
 		outfile= os.path.join(outpath, name)
-		if os.path.isfile(outfile):
-			continue
-		jsondata= dict()
-		jsondata['values']= map(lambda x:x[1], series)
-		jsondata['time']= map(lambda x:x[0], series)
 		fout= open(outfile, 'w')
-		fout.write(json.dumps(jsondata))
+		fout.write(json.dumps(series))
 		fout.close()
 
 

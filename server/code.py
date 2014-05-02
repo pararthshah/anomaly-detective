@@ -1,7 +1,11 @@
 #!/usr/bin/python
 
 import web
+import os, sys, time
 import json
+from scripts import read_timeseries
+
+rel_datapath= "../../cs341/data/week1"
 
 urls = (
     '/', 'Index',
@@ -22,12 +26,17 @@ class Metrics:
 
 class Data:
     def GET(self):
-				params = web.input()
-				web.header('Content-Type', 'application/json')
-        # TODO: This is needed for CORS (AJAX)- Currently, our HTTP and
-				# API servers are on different domains. Consider removing/refactoring.
-				web.header('Access-Control-Allow-Origin', '*')
-				return json.dumps([[5, 2], [6, 3], [8, 2], [10,5], [16,8],[29,10]]);
+	params = web.input()
+	web.header('Content-Type', 'application/json')
+	# TODO: This is needed for CORS (AJAX)- Currently, our HTTP and
+	# API servers are on different domains. Consider removing/refactoring.
+	web.header('Access-Control-Allow-Origin', '*')
+	filename= params.machine + "." + params.metric
+	path= os.path.join(os.getcwd(), rel_datapath, "json", filename)
+	with open(path) as str_file:
+		json_str= str_file.read()
+	return json_str
+
 
 class Anomalies:
     def GET(self):
@@ -36,7 +45,13 @@ class Anomalies:
 
 class Annotations:
     def POST(self):
-        params = web.input()
+        json_data = web.data()
+	# get 'name' from json_data
+	name= json.loads(json_data)['name']
+	path= os.path.join(rel_datapath, "annotaitions", name + time.time())
+	with open(path, 'w') as annotation_file:
+		annotation_file.write(json_data)
+
         return "Annotations!"
 
 if __name__ == "__main__": 
