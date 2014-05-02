@@ -92,9 +92,13 @@ $(document).ready(function() {
     });
 
     $("#btn-get-metric").click(function() { 
+        var selectedMachine = $("#machine-name").val();
+        var selectedMetric = $("#metric-name").val();
         // fetch data from server
-        $.getJSON("http://0.0.0.0:8080/data?machine=node1&metric=metric1", function(data) {
-            metricChart.series[0].setData(data);
+        $.getJSON("/data", 
+            { machine : selectedMachine, metric : selectedMetric },
+            function(response) {
+                metricChart.series[0].setData(response);
         });
     });
 
@@ -108,7 +112,8 @@ $(document).ready(function() {
     // Show Metrics list
     $("#machine-name").change(function(event) { 
         // Enable the metrics select dropdown and show the appropriate metrics.
-        addSelectOptions("#metric-name", metricsData[$(this).val()]);
+        var selectedMachine = $(this).val();
+        addSelectOptions("#metric-name", metricsData[selectedMachine]);
         $("#metric-name").attr('disabled', false);
     });
 });
