@@ -44,6 +44,8 @@ def get_anomalies(path, n_states, ratio):
 		if value not in flagged_values and curr_flagged== 1:
 			intervals.append((start_int, index*factor))
 			curr_flagged= 0
+	# convert intervals - indices to time values
+	intervals= map(lambda (x, y):(series[x][0], series[y][0]), intervals)
 	return intervals
 				
 def get_histogram(v):
