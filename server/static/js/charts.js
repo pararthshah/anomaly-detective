@@ -25,6 +25,17 @@ function MetricChart(chart) {
     this.anomaliesId = [];
 }
 
+/*
+ * Enable the metrics select dropdown and show the appropriate metrics.
+ */
+function showMetricsForMachine(selectedMachine) {
+    addSelectOptions("#metric-name", metricsData[selectedMachine]);
+    $("#metric-name").attr('disabled', false);
+}
+
+/*
+ * Returns the machine name and metric in a JSON object.
+ */
 function getSelectedMetric() {
     return {
         "machine" : $("#machine-name").val(),
@@ -60,19 +71,36 @@ MetricChart.prototype.addAnomalies = function(anomalies) {
     $.each(anomalies, (function(index, tuple) {
         idArray.push(index)
 
+        // Add Plot Bands
         this.chart.xAxis[0].addPlotBand({
             from: tuple[0], 
             to: tuple[1],
             color: anomalyColor,
             id:index,
             label: {
-                text: "Anomaly " + (index+1),
+                text: (index+1),
                 verticalAlign: 'bottom',
                 y: 0
             }
         });
+
+        // Add flags
+        this.chart.addSeries({
+                type: 'flags',
+                data: [{
+                    x: (tuple[0]+tuple[1])/2,
+                    title: (index+1)
+                    //text: 'Information v2'
+                }],
+                onSeries: this.id,
+                shape: 'circlepin',
+                width: 20,
+                showInLegend: false
+        }, false);
+
     }).bind(this));
 
+    this.chart.redraw();
     this.anomalies = anomalies;
     this.anomaliesId = idArray;
     return idArray;
@@ -86,6 +114,11 @@ MetricChart.prototype.removeAnomalies = function() {
     $.each(this.anomaliesId, (function(index, id) {
         this.chart.xAxis[0].removePlotBand(id);
     }).bind(this));
+
+    // All series above [0] are flags. Remove them.
+    while(this.chart.series.length > 1) {
+        this.chart.series[1].remove();
+    }
 
     this.chart.anomalies = [];
     this.chart.anomaliesId = [];
@@ -180,6 +213,10 @@ $(document).ready(function() {
 
     $("#btn-get-metric").click(function() { 
         var selectedMetric = getSelectedMetric();
+        console.log(selectedMetric);
+        // show preloader
+        $("#loader-preloader").show("slow");
+
         // fetch data from server
         $.getJSON("/data", 
             selectedMetric, 
@@ -188,6 +225,7 @@ $(document).ready(function() {
                 metricChart.chart.series[0].setData(response);
                 // Remove anomalies of last data, if any.
                 metricChart.removeAnomalies();
+                $("#loader-preloader").hide("slow");
         });
     });
 
@@ -196,14 +234,12 @@ $(document).ready(function() {
         metricsData = response;
         $("#machine-name").attr('disabled', false);
         addSelectOptions("#machine-name", response, true);
+        showMetricsForMachine($("#machine-name").val());
     });
 
     // Show Metrics list
     $("#machine-name").change(function(event) { 
-        // Enable the metrics select dropdown and show the appropriate metrics.
-        var selectedMachine = $(this).val();
-        addSelectOptions("#metric-name", metricsData[selectedMachine]);
-        $("#metric-name").attr('disabled', false);
+        showMetricsForMachine($(this).val())
     });
 
     // Fetch anomalies
@@ -228,6 +264,10 @@ $(document).ready(function() {
             throw new Exception('Not Supported');    
         }
 
+        console.log(params);
+        // Show algorithm-preloader
+        $("#algorithm-preloader").show('slow');
+
         $.getJSON("/anomalies", 
             params,
             function(response) {
@@ -236,6 +276,7 @@ $(document).ready(function() {
                 console.log(response);
                 metricChart.removeAnomalies();
                 metricChart.addAnomalies(response);
+                $("#algorithm-preloader").hide('slow');
         });
     });
 

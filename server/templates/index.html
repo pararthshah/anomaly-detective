@@ -43,6 +43,7 @@ $def with (name)
 									</select>
 							</div>
 							<button type="button" class="btn btn-primary" id="btn-get-metric">Load</button>
+							<div class="preloader" id="load-preloader" style="display:none"></div>
 						</div>
         </form>
         <!-- machine/mertric form ends-->
@@ -63,8 +64,8 @@ $def with (name)
                                 <div class="form-group">
 																	<h4 for="algorithm">Algorithm</h4>
                                     <select id="algorithm-name" class="form-control">
-                                        <option value="MA">Moving Average</option>
                                         <option value="HMM">Hidden Markov Model</option>
+                                        <option value="MA">Moving Average</option>
                                     </select>
                                 </div>
 																<!-- Algorithm parameters begin-->
@@ -72,7 +73,7 @@ $def with (name)
 																	<h4>Parameters</h4>
 
 																	<!-- Parameters for Moving Average begin -->
-																	<div id="params-ma">
+																	<div id="params-ma" style="display:none">
 																		<div class="form-group">
 																			<label>Window Size</label>
 																			<input type="text" id="params-ma-window" class="form-control" placeholder="100" />
@@ -85,7 +86,7 @@ $def with (name)
 																	<!-- Parameters for Moving Average end-->
 
 																	<!--Parametes for HMM begin-->
-																	<div id="params-hmm" style="display:none">
+																	<div id="params-hmm">
 																		<div class="form-group">
 																			<label>Number of states</label>
 																			<input type="text" class="form-control" id="params-hmm-states" placeholder="4" />
@@ -99,7 +100,7 @@ $def with (name)
 																</div>
 																<!--Algorithm parameters end-->
 																<button type="button" id="algorithm-submit" class="btn btn-primary">Submit</button>
-																<div class="preloader" id="algorithm-preloader"></div>
+																<div class="preloader" id="algorithm-preloader" style="display:none"></div>
                             </form>
                             <!-- panel form ends-->
                         </div>
