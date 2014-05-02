@@ -3,6 +3,12 @@ var metricsData; // Stores the machine, metric object.
 // red, yellow, purple, green/lime
 var anomalyColors = ['#EE454B', '#FFFB94', '#B499FF', '#BAFF7A'];
 
+// Algorithm name cache - such informative. wow.
+var algorithmNameCache = {
+    "MA" : "MA",
+    "HMM" : "HMM"
+}
+
 function getSelectedMetric() {
     return {
         "machine" : $("#machine-name").val(),
@@ -159,13 +165,15 @@ $(document).ready(function() {
         var selectedMetric = getSelectedMetric();
         var params = {};
 
-        if(selectedAlgorithm === "MA") {
+        if(selectedAlgorithm === algorithmNameCache["MA"]) {
             var windowSize = $("#params-ma-window").val();
-            params = $.extend(selectedMetric, { "window" : windowSize });
+            var threshold = $("#params-ma-threshold").val();
+            params = $.extend(selectedMetric, { "window" : windowSize, "threshold" : threshold});
         } 
-        else if(selectedAlgorithm == "HMM") {
+        else if(selectedAlgorithm == algorithmNameCache["HMM"]) {
             var numOfStates = $("#params-hmm-states").val(); 
-            params = $.extend(selectedMetric, { "states" : numOfStates });
+            var ratio = $("#params-hmm-ratio").val();
+            params = $.extend(selectedMetric, { "states" : numOfStates, "ratio" : ratio });
         } 
         else {
             throw new Exception('Not Supported');    
@@ -175,6 +183,22 @@ $(document).ready(function() {
             params,
             function(response) {
                 console.log(response);
-            });
+        });
+    });
+
+    // Show/hide appropriate parameters
+    $("#algorithm-name").change(function(event) {
+        var selectedAlgorithm = event.target.value;
+        var paramSelector;
+
+        if(selectedAlgorithm === algorithmNameCache["MA"]) {
+            paramSelector = "#params-ma";       
+        } else if(selectedAlgorithm === algorithmNameCache["HMM"]) {
+            paramSelector = "#params-hmm"
+        }
+         // Hide all other params div.
+        $("div[id^=params]").hide('fast', function() {
+            $(paramSelector).show('fast');
+        });
     });
 });

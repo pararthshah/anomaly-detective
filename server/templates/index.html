@@ -73,15 +73,27 @@ $def with (name)
 
 																	<!-- Parameters for Moving Average begin -->
 																	<div id="params-ma">
-																		<label>Window Size</label>
-																		<input type="text" id="params-ma-window" class="form-control" placeholder="100" />
+																		<div class="form-group">
+																			<label>Window Size</label>
+																			<input type="text" id="params-ma-window" class="form-control" placeholder="100" />
+																		</div>
+																		<div class="form-group">
+																			<label>Threshold</label>
+																			<input type="text" id="params-ma-threshold" class="form-control" placeholder="10" />
+																		</div>
 																	</div>
 																	<!-- Parameters for Moving Average end-->
 
 																	<!--Parametes for HMM begin-->
-																	<div id="params-hmm" class="hidden">
-																		<label>Number of states</label>
-																		<input type="text" class="form-control" id="params-hmm-states" placeholder="4" />
+																	<div id="params-hmm" style="display:none">
+																		<div class="form-group">
+																			<label>Number of states</label>
+																			<input type="text" class="form-control" id="params-hmm-states" placeholder="4" />
+																		</div>
+																		<div class="form-group">
+																			<label>Ratio</label>
+																			<input type="text" class="form-control" id="params-hmm-ratio" placeholder="0.2" />
+																		</div>
 																	</div>
 																	<!-- Parameters for HMM end-->
 																</div>
