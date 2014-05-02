@@ -15,12 +15,12 @@ $def with (name)
 <body>
     <div class="container">
         <div class="header">
-            <h3 class="text-muted">Anomaly Detective: $name</h3>
+            <h3 class="text-muted">Anomaly Detective</h3>
         </div>
         <!-- Machine/metric form begins-->
         <form role="form" class="form-inline" id="form-metric">
             <div class="form-group">
-                <label for="machine-name" class="control-label">Machine Name</label>
+                <label for="machine-name" class="control-label">Machine:</label>
                 <select class="form-control" id="machine-name">
                     <!--Rendered through JS-->
                     <option value="1">Dummy 1</option>
@@ -30,7 +30,7 @@ $def with (name)
             </div>
 
             <div class="form-group">
-                <label for="metric-name" class="control-label">Metric Name</label>
+                <label for="metric-name" class="control-label">Metric:</label>
                 <select class="form-control" id="metric-name">
                     <!--Rendered through JS-->
                     <option value="1">Dummy 1</option>
@@ -39,11 +39,16 @@ $def with (name)
                 </select>
             </div>
             <div class="form-group">
-                <label form="metric-interval">Interval (s)</label>
-                <input type="text" class="form-control" />
+                <label form="metric-interval">Interval:</label>
+                <select class="form-control" id="interval">
+                    <!--Rendered through JS-->
+                    <option value="1">1 Week</option>
+                    <option value="2">2 Weeks</option>
+                    <option value="3">3 Weeks</option>
+                </select>
             </div>
             <div class="form-group">
-                <button type="button" class="form-control btn btn-primary" id="btn-get-metric">Go</button>
+                <button type="button" class="form-control btn btn-primary" id="btn-get-metric">Load</button>
             </div>
         </form>
         <!-- machine/mertric form ends-->
@@ -55,7 +60,7 @@ $def with (name)
         <!-- controls begin-->
         <div id="controls">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="panel panel-default">
                         <div class="panel-heading">Detection Options</div>
                         <div class="panel-body">
@@ -76,7 +81,7 @@ $def with (name)
                     </div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <div class="panel panel-default">
                         <div class="panel-heading">Annotation</div>
                         <div class="panel-body">
