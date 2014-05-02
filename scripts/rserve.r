@@ -4,4 +4,5 @@ require('Rserve')
 # port <- Sys.getenv('PORT')
 
 # run Rserve in process
-Rserve(debug = FALSE, args = NULL)
+#Rserve(args="--no-save", debug = FALSE, args = NULL)
+Rserve()

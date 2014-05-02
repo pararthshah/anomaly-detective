@@ -42,7 +42,7 @@ class Data:
         params = web.input()
         web.header('Content-Type', 'application/json')
         filename = params.machine + "-" + params.metric + ".data"
-        path = os.path.join(config.TS_DIR, filename)
+        path = os.path.join(config.TS_JSON_DIR, filename)
         with open(path) as str_file:
             json_str = str_file.read()
             return json_str

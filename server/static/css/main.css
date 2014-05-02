@@ -24,6 +24,17 @@
 	display:hidden;
 }
 
+.preloader {
+	background:url('../img/preloader.gif') no-repeat;
+	background-size:contain;
+	display:inline-block;
+	vertical-align:middle;
+	margin:10px;
+	width:32px;
+	height:32px;
+	display:none;
+}
+
 /* Bootstrap overrides */
 .panel-heading {
 	font-size:18px;

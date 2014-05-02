@@ -16,12 +16,12 @@ datadir=$1
 metrics=$2
 
 set -e
-cd data
-rm -f important.txt
-rm -rf timeseries/*
-rm -rf timeseries_json/*
-mkdir -p timeseries_json
-touch important.txt
-while read p; do ls $datadir | grep "$p" >> important.txt; done < $metrics
-python ../scripts/create_ts_list.py important.txt important.json
-python ../scripts/ts_to_json.py $datadir important.txt timeseries_json
+rm -f data/important.txt
+rm -rf data/timeseries/*
+rm -rf data/timeseries_json/*
+mkdir -p data/timeseries_json
+touch data/important.txt
+while read p; do ls $datadir | grep "$p" >> data/important.txt; done < $metrics
+python scripts/create_ts_list.py data/important.txt data/important.json
+while read p; do cp -v $datadir/$p data/timeseries; done < data/important.txt
+python scripts/ts_to_json.py $datadir data/important.txt data/timeseries_json
