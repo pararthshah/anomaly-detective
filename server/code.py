@@ -60,7 +60,7 @@ class Anomalies:
 		    return str(e)
 	elif params.method=='HMM':
 		filename = params.machine + "-" + params.metric + ".data"
-		path = os.path.join(os.getcwd(), "../data/week1/timeseries", filename)
+		path = os.path.join(os.getcwd(), config.TS_DIR, filename)
 		anomalies= get_anomalies(path, int(params.n_states), float(params.percentage)/100)
 		return json.dumps(anomalies)
 			
