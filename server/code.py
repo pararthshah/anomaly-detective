@@ -50,7 +50,7 @@ class Annotations:
         json_data = web.data()
 	# get 'name' from json_data
 	name= json.loads(json_data)['name']
-	path= os.path.join(rel_datapath, "annotaitions", name + time.time())
+	path= os.path.join(rel_datapath, "annotaitions", name + "_" + time.time())
 	with open(path, 'w') as annotation_file:
 		annotation_file.write(json_data)
         return "Annotations!"
