@@ -271,7 +271,7 @@ $(document).ready(function() {
 
         $.ajax({
             url: "/anomalies",
-            params: params,
+            data: params,
             dataType: "json",
             success: function(response) {
                 // Update 
