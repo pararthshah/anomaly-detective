@@ -1,7 +1,6 @@
-run_hmm <- function(path_str, n_states) {
-	n_states
-	sc <- read.table(path_str, header= F, sep= "\t")
-	ResHMM <- HMMFit(sc[, 2], nStates= n_states)
-	Vit <- viterbi(ResHMM, sc[, 2])
+run_hmm <- function(sc, n_states) {
+	#sc <- read.table(path_str, header= F, sep= "\t")
+	ResHMM <- HMMFit(sc, nStates= n_states)
+	Vit <- viterbi(ResHMM, sc)
 	Vit[[1]]
 }

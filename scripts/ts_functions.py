@@ -36,10 +36,18 @@ def find_common_timeinterval(slist):	# returns a time interval common to all ts 
 	return (mintime, maxtime)
 
 
-def bucketize(slist, n_buckets):		# trims all timeseries so that all contain common times and then bucketizes them
-	(mintime, maxtime)= find_common_timeinterval(slist)
+def bucketize(slist, n_buckets):		# trims one or a list of timeseries so that all contain common times and then bucketizes them
+	if type(slist[0]) is list:
+		(mintime, maxtime)= find_common_timeinterval(slist)
+	else:
+		mintime= slist[0][0]
+		maxtime= slist[-1][0]
+
 	x= int((maxtime-mintime)/n_buckets)
 	timevalues= range(int(mintime), int(maxtime), int((maxtime-mintime)/n_buckets))
-	bucketlist= [fit_ts(series, timevalues) for series in slist]
+	if type(slist[0]) is list:
+		bucketlist= [fit_ts(series, timevalues) for series in slist]
+	else:
+		bucketlist= fit_ts(slist, timevalues)
 
 	return bucketlist
