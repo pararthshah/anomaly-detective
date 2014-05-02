@@ -1,4 +1,20 @@
 var metricChart;
+var metricsData; // Stores the machine, metric object.
+
+/*
+ * Adds the options from the array to the select element with the given jquery selector
+ * Adds the value by default. Passing addKey=true (objects) will add the keys instead.
+ */
+function addSelectOptions(elementSelector, data, addKey) {
+    $(elementSelector).html("");
+    $.each(data, function(key, value) {
+            var valueToAdd = addKey ? key : value;
+            $(elementSelector)
+                .append($("<option></option>")
+                .attr("value", valueToAdd)
+                .text(valueToAdd));
+    });
+}
 
 $(document).ready(function() {
     $(function() {
@@ -80,5 +96,19 @@ $(document).ready(function() {
         $.getJSON("http://0.0.0.0:8080/data?machine=node1&metric=metric1", function(data) {
             metricChart.series[0].setData(data);
         });
+    });
+
+    // Fetch the machine and metrics 
+    $.getJSON("metrics", function(response) {
+        metricsData = response;
+        $("#machine-name").attr('disabled', false);
+        addSelectOptions("#machine-name", response, true);
+    });
+
+    // Show Metrics list
+    $("#machine-name").change(function(event) { 
+        // Enable the metrics select dropdown and show the appropriate metrics.
+        addSelectOptions("#metric-name", metricsData[$(this).val()]);
+        $("#metric-name").attr('disabled', false);
     });
 });

@@ -27,11 +27,11 @@ class Metrics:
     def GET(self):
         params = web.input(name="important")
         try:
-            imp_file = open(os.path.join(config.DATA_DIR, name+".json"))    
+            imp_file = open(os.path.join(config.DATA_DIR, params.name+".json"))    
             imp_json = imp_file.read()
             return imp_json
-        except:
-            return "Error"
+        except Exception, e:
+            return str(e)
 
 class Data:
     def GET(self):
