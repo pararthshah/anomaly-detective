@@ -1,12 +1,28 @@
+// Reference to the Highcharts chart object.
+// Has additional properties - 
+// @property anomalies - Array of tuples of start, end of each anomaly.
+// @property anomaliesId - Array of anomaly plot band ids. Useful for removing later.
 var metricChart;
+var metricChartId = "metricChart";
+
 var metricsData; // Stores the machine, metric object.
 // red, yellow, purple, green/lime
-var anomalyColors = ['#EE454B', '#FFFB94', '#B499FF', '#BAFF7A'];
+var anomalyColor='#EE454B';
 
 // Algorithm name cache - such informative. wow.
 var algorithmNameCache = {
     "MA" : "MA",
     "HMM" : "HMM"
+}
+
+/*
+ * MetricChart object.
+ */
+function MetricChart(chart) {
+    this.chart = chart;
+    this.id = metricChartId;
+    this.anomalies =  [];
+    this.anomaliesId = [];
 }
 
 function getSelectedMetric() {
@@ -32,22 +48,22 @@ function addSelectOptions(elementSelector, data, addKey) {
 }
 
 /* 
- * Adds a plot band to the chart.
+ * Adds a plot band to the chart. 
  * @param chart : Highchart object.
  * @param anomalies : Array of tuples (arrays of size 2) marking start and end of each anomaly.
  * For instance - [[1,2], [2,3], [4,5]]
- * Returns an array of plot band IDs.
+ * Returns an array of plot band IDs. Also updates the chart object's anomalies/anomaliesId array.
  */
-function addAnomalies(chart, anomalies) {
+MetricChart.prototype.addAnomalies = function(anomalies) {
     var idArray = []
 
-    $.each(anomalies, function(index, tuple) {
+    $.each(anomalies, (function(index, tuple) {
         idArray.push(index)
 
-        chart.xAxis[0].addPlotBand({
+        this.chart.xAxis[0].addPlotBand({
             from: tuple[0], 
             to: tuple[1],
-            color: anomalyColors[index], 
+            color: anomalyColor,
             id:index,
             label: {
                 text: "Anomaly " + (index+1),
@@ -55,15 +71,50 @@ function addAnomalies(chart, anomalies) {
                 y: 0
             }
         });
-    });
+    }).bind(this));
 
+    this.anomalies = anomalies;
+    this.anomaliesId = idArray;
     return idArray;
+}
+
+/*
+ * Removes anomalies from the chart. Also resets the chart object's anomaliesId array.
+ * @param : chart object.
+ */
+MetricChart.prototype.removeAnomalies = function() {
+    $.each(this.anomaliesId, (function(index, id) {
+        this.chart.xAxis[0].removePlotBand(id);
+    }).bind(this));
+
+    this.chart.anomalies = [];
+    this.chart.anomaliesId = [];
+}
+
+/*
+ * Converts the timeseries data (list of tuples (x,y)) to the required format by doing the following:
+ * Convert UNIX epoch to milliseconds by multiplying each x value with 1000.
+ */
+function convertTSData(tsData) {
+    for(var i=0; i<tsData.length;i++) {
+        tsData[i][0] *= 1000;
+    }
+}
+
+/*
+ * Converts the anomaly data (list of tuples (x,y)) to the required format by doing the following:
+ * Convert UNIX epoch to milliseconds by multiplying each x and y value with 1000.
+ */
+function convertAnomalyData(anomalyData) {
+    for(var i=0; i<anomalyData.length;i++) {
+        anomalyData[i][0] *= 1000;
+        anomalyData[i][1] *= 1000;
+    }
 }
 
 $(document).ready(function() {
     $(function() {
         $.getJSON('http://www.highcharts.com/samples/data/jsonp.php?filename=large-dataset.json&callback=?', function(data) {
-            console.log(data);
             // Create a timer
             var start = + new Date();
 
@@ -76,8 +127,8 @@ $(document).ready(function() {
                                 this.setTitle(null, {
                                     text: 'Built chart in '+ (new Date() - start) +'ms'
                                 });
-                                // Assign the global variable 
-                                metricChart = $("#chart-container").highcharts();
+        
+                                metricChart = new MetricChart($("#chart-container").highcharts());
                             }
                         },
                         zoomType: 'x'
@@ -119,12 +170,9 @@ $(document).ready(function() {
                 },
                 series: [{
                             name: 'Metric',
+                            id: metricChartId,
                             data: data,
-                            tooltip: {
-                                valueDecimals: 1,
-                            }
-                    }]
-
+                }]
             });
         });
 
@@ -136,11 +184,10 @@ $(document).ready(function() {
         $.getJSON("/data", 
             selectedMetric, 
             function(response) {
-                // Convert UNIX epoch to milliseconds
-                for(var i=0; i<response.length;i++) {
-                    response[i][0] *= 1000; 
-                }
-                metricChart.series[0].setData(response);
+                convertTSData(response);
+                metricChart.chart.series[0].setData(response);
+                // Remove anomalies of last data, if any.
+                metricChart.removeAnomalies();
         });
     });
 
@@ -168,12 +215,14 @@ $(document).ready(function() {
         if(selectedAlgorithm === algorithmNameCache["MA"]) {
             var windowSize = $("#params-ma-window").val();
             var threshold = $("#params-ma-threshold").val();
-            params = $.extend(selectedMetric, { "window" : windowSize, "threshold" : threshold});
+            var method = algorithmNameCache["MA"];
+            params = $.extend(selectedMetric, { "window" : windowSize, "threshold" : threshold, "method" : method });
         } 
         else if(selectedAlgorithm == algorithmNameCache["HMM"]) {
             var numOfStates = $("#params-hmm-states").val(); 
-            var ratio = $("#params-hmm-ratio").val();
-            params = $.extend(selectedMetric, { "states" : numOfStates, "ratio" : ratio });
+            var percentage = $("#params-hmm-percentage").val();
+            var method = algorithmNameCache["HMM"];
+            params = $.extend(selectedMetric, { "n_states" : numOfStates, "percentage" : percentage, "method" : method });
         } 
         else {
             throw new Exception('Not Supported');    
@@ -182,7 +231,11 @@ $(document).ready(function() {
         $.getJSON("/anomalies", 
             params,
             function(response) {
+                // Update 
+                convertAnomalyData(response);
                 console.log(response);
+                metricChart.removeAnomalies();
+                metricChart.addAnomalies(response);
         });
     });
 
