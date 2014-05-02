@@ -51,7 +51,6 @@ class Annotations:
 	path= os.path.join(rel_datapath, "annotaitions", name + time.time())
 	with open(path, 'w') as annotation_file:
 		annotation_file.write(json_data)
-
         return "Annotations!"
 
 if __name__ == "__main__": 
