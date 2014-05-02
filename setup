@@ -1,0 +1,27 @@
+#!/bin/bash
+# Run this setup to configure the anomaly-detective server
+
+# # Setup local library to load R packages
+# mkdir -p ~/R ~/R/library         # Only need do this once
+# #echo 'R_LIBS_USER="~/R/library"' >  $HOME/.Renviron
+# #source $HOME/.Renviron
+# setenv R_LIBS_USER "~/R/library"
+# Rscript scripts/setup.r
+
+# # Start Rserve
+# Rscript scripts/rserve.r > /dev/null &
+
+# Setup the timeseries data
+datadir=$1
+metrics=$2
+
+set -e
+cd data
+rm -f important.txt
+rm -rf timeseries/*
+rm -rf timeseries_json/*
+mkdir -p timeseries_json
+touch important.txt
+while read p; do ls $datadir | grep "$p" >> important.txt; done < $metrics
+python ../scripts/create_ts_list.py important.txt important.json
+python ../scripts/ts_to_json.py $datadir important.txt timeseries_json

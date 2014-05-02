@@ -20,6 +20,10 @@
 	margin-top:15px;
 }
 
+.hidden {
+	display:hidden;
+}
+
 /* Bootstrap overrides */
 .panel-heading {
 	font-size:18px;

@@ -1,16 +1,13 @@
 #!/usr/bin/python
 
-import config
-import sys
-
-sys.path.insert(0,"../scripts")
-
 import web
 import os, sys, time
 import json
-import read_timeseries
+import config
 
-rel_datapath= "../../cs341/data/week1"
+sys.path.insert(0, config.SCRIPTS_DIR)
+
+import read_timeseries
 
 urls = (
     '/', 'Index',
@@ -28,21 +25,23 @@ class Index:
 
 class Metrics:
     def GET(self):
-        params = web.input()
-        return "Metrics!"
+        params = web.input(name="important")
+        try:
+            imp_file = open(os.path.join(config.DATA_DIR, params.name+".json"))    
+            imp_json = imp_file.read()
+            return imp_json
+        except Exception, e:
+            return str(e)
 
 class Data:
     def GET(self):
         params = web.input()
         web.header('Content-Type', 'application/json')
-        # TODO: This is needed for CORS (AJAX)- Currently, our HTTP and
-        # API servers are on different domains. Consider removing/refactoring.
-        # web.header('Access-Control-Allow-Origin', '*')
-        filename= params.machine + "." + params.metric
-        path= os.path.join(os.getcwd(), rel_datapath, "json", filename)
+        filename = params.machine + "-" + params.metric + ".data"
+        path = os.path.join(config.TS_DIR, filename)
         with open(path) as str_file:
-            json_str= str_file.read()
-        return json_str
+            json_str = str_file.read()
+            return json_str
 
 
 class Anomalies:
@@ -53,11 +52,19 @@ class Anomalies:
 class Annotations:
     def POST(self):
         json_data = web.data()
+<<<<<<< HEAD
 	# get 'name' from json_data
 	name= json.loads(json_data)['name']
 	path= os.path.join(rel_datapath, "annotaitions", name + "_" + time.time())
 	with open(path, 'w') as annotation_file:
 		annotation_file.write(json_data)
+=======
+        # get 'name' from json_data
+        name = json.loads(json_data)['name']
+        path = os.path.join(config.ANNOTATIONS_DIR, name + "_" + time.time() + ".json")
+        with open(path, 'w') as annotation_file:
+            annotation_file.write(json_data)
+>>>>>>> fc2416bab595e29b155e948532bb6d4ab7defbf9
         return "Annotations!"
 
 if __name__ == "__main__": 

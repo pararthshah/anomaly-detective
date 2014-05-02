@@ -11,16 +11,16 @@ SCRIPTS_DIR = os.path.join(BASE_DIR, "scripts")
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
-TS_DIR = os.path.join(DATA_DIR, "timeseries")
+TS_DIR = os.path.join(DATA_DIR, "timeseries_json")
 
 ANOMALIES_DIR = os.path.join(DATA_DIR, "anomalies")
 
 ANNOTATIONS_DIR = os.path.join(DATA_DIR, "annotations")
 
-f = open(os.path.join(DATA_DIR, "metrics.json"))
+# f = open(os.path.join(DATA_DIR, "metrics.json"))
 
-METRICS_LIST = json.load(f)
+# METRICS_LIST = json.load(f)
 
-f.close()
+# f.close()
 
 del os

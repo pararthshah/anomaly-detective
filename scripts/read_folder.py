@@ -5,10 +5,15 @@ import sys
 from read_timeseries import read_timeseries, read_ts_iter
 
 class read_folder:
-	def __init__(self, path):
+	def __init__(self, path, names=""):
 #		print "path in read_folder:", path
-		self.fullpath= path
-		self.filelist= [f for f in os.listdir(self.fullpath) if os.path.isfile(os.path.join(self.fullpath, f))]
+		self.fullpath= os.path.abspath(path)
+		if not names:
+			with open(names) as f:
+				names_list = f.readlines()
+				self.filelist = map(lambda x: os.path.join(self.fullpath, x.strip()),names_list)
+		else:
+			self.filelist= [f for f in os.listdir(self.fullpath) if os.path.isfile(os.path.join(self.fullpath, f))]
 #		print "self filelist:", self.filelist
 		self.n_files= len(self.filelist)
 		self.currfile= 0
@@ -33,5 +38,9 @@ class read_folder_lazy(read_folder):
 		
 		
 if __name__ == '__main__':
-	for ts in read_folder(sys.argv[1]):
-		print len(ts)
+	count = 0
+	for ts in read_folder(sys.argv[1], sys.argv[2]):
+		#print len(ts)
+		count += 1
+	print count
+

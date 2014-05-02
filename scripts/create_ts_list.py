@@ -28,10 +28,11 @@ for line in important:
     if not line.strip().endswith(".data"):
         continue
     line = line.strip()[:-5]
-    m = re.search("-", line)
+    m = re.search("com-com", line)
     if m:
-        machine = line[:m.start()]
-        metric = line[m.start()+1:]
+        index = m.start()+3
+        machine = line[:index]
+        metric = line[index+1:]
         if machine not in output:
             output[machine] = []
         output[machine].append(metric)
