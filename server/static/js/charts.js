@@ -1,5 +1,7 @@
 var metricChart;
 var metricsData; // Stores the machine, metric object.
+// red, yellow, purple, green/lime
+var anomalyColors = ['#EE454B', '#FFFB94', '#B499FF', '#BAFF7A'];
 
 /*
  * Adds the options from the array to the select element with the given jquery selector
@@ -16,73 +18,91 @@ function addSelectOptions(elementSelector, data, addKey) {
     });
 }
 
+/* 
+ * Adds a plot band to the chart.
+ * @param chart : Highchart object.
+ * @param anomalies : Array of tuples (arrays of size 2) marking start and end of each anomaly.
+ * For instance - [[1,2], [2,3], [4,5]]
+ * Returns an array of plot band IDs.
+ */
+function addAnomalies(chart, anomalies) {
+    $.each(anomalies, function(index, tuple) {
+        chart.xAxis[0].addPlotBand({
+            from: tuple[0], 
+            to: tuple[1],
+            color: anomalyColors[index], 
+            id:index,
+            label: {
+                text: "Anomaly " + (index+1),
+                verticalAlign: 'bottom',
+                y: 0
+            }
+        });
+    });
+}
+
 $(document).ready(function() {
     $(function() {
-
         $.getJSON('http://www.highcharts.com/samples/data/jsonp.php?filename=large-dataset.json&callback=?', function(data) {
+            console.log(data);
             // Create a timer
             var start = + new Date();
 
             // Create the chart
             $('#chart-container').highcharts('StockChart', {
                     chart: {
-                    events: {
-                        load: function(chart) {
-                            this.setTitle(null, {
-                                text: 'Built chart in '+ (new Date() - start) +'ms'
-                            });
-                            metricChart = $("#chart-container").highcharts();
-                        }
-                    },
-                    zoomType: 'x'
+                        type:'line',
+                        events: {
+                            load: function(chart) {
+                                this.setTitle(null, {
+                                    text: 'Built chart in '+ (new Date() - start) +'ms'
+                                });
+                                // Assign the global variable 
+                                metricChart = $("#chart-container").highcharts();
+                            }
+                        },
+                        zoomType: 'x'
                     },
                     rangeSelector: {
-                    inputEnabled: $('#chart-container').width() > 480,
-                            buttons: [{
-                                    type: 'day',
-                                    count: 3,
-                                    text: '3d'
-                            }, {
-                                    type: 'week',
-                                    count: 1,
-                                    text: '1w'
-                            }, {
-                                    type: 'month',
-                                    count: 1,
-                                    text: '1m'
-                            }, {
-                                    type: 'month',
-                                    count: 6,
-                                    text: '6m'
-                            }, {
-                                    type: 'year',
-                                    count: 1,
-                                    text: '1y'
-                            }, {
-                                    type: 'all',
-                                    text: 'All'
-                            }],
-                            selected: 3
-                    },
+                        inputEnabled: $('#chart-container').width() > 480,
+                                buttons: [{
+                                        type: 'second',
+                                        count: 10,
+                                        text: '10s'
+                                }, {
+                                        type: 'minute',
+                                        count: 1,
+                                        text: '1m'
+                                }, {
+                                        type: 'hour',
+                                        count: 1,
+                                        text: '1h'
+                                }, {
+                                        type: 'd',
+                                        count: 1,
+                                        text: '1d'
+                                },{
+                                        type: 'all',
+                                        text: 'All'
+                                }],
+                                selected: 3
+                        },
                 yAxis: {
                     title: {
-                        text: 'Temperature (°C)'
+                        text: 'Timestamp'
                     }
                 },
                     title: {
-                    text: 'Hourly temperatures in Vik i Sogn, Norway, 2004-2010'
+                        text: 'Timeseries'
                 },
                 subtitle: {
                     text: 'Built chart in ...' // dummy text to reserve space for dynamic subtitle
                 },
                 series: [{
-                            name: 'Temperature',
+                            name: 'Timeseries',
                             data: data,
-                            pointStart: Date.UTC(2004, 3, 1),
-                            pointInterval: 3600 * 1000,
                             tooltip: {
                                 valueDecimals: 1,
-                                valueSuffix: '°C'
                             }
                     }]
 

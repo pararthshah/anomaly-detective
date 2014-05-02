@@ -8,6 +8,7 @@ import config
 sys.path.insert(0, config.SCRIPTS_DIR)
 
 import read_timeseries
+from rserve import RGateway
 
 urls = (
     '/', 'Index',
@@ -18,6 +19,8 @@ urls = (
 )
 
 render = web.template.render('templates')
+
+r_gateway = RGateway()
 
 class Index:
     def GET(self):
@@ -47,24 +50,22 @@ class Data:
 class Anomalies:
     def GET(self):
         params = web.input()
-        return "Anomalies!"
+        try:
+            filename = params.machine + "-" + params.metric + ".data"
+            path = os.path.join(config.TS_DIR, filename)
+            anomalies = r_gateway.detect_SMA(path, int(params.window), float(params.threshold))
+            return anomalies
+        except Exception, e:
+            return str(e)
 
 class Annotations:
     def POST(self):
         json_data = web.data()
-<<<<<<< HEAD
-	# get 'name' from json_data
-	name= json.loads(json_data)['name']
-	path= os.path.join(rel_datapath, "annotaitions", name + "_" + time.time())
-	with open(path, 'w') as annotation_file:
-		annotation_file.write(json_data)
-=======
         # get 'name' from json_data
         name = json.loads(json_data)['name']
         path = os.path.join(config.ANNOTATIONS_DIR, name + "_" + time.time() + ".json")
         with open(path, 'w') as annotation_file:
             annotation_file.write(json_data)
->>>>>>> fc2416bab595e29b155e948532bb6d4ab7defbf9
         return "Annotations!"
 
 if __name__ == "__main__": 

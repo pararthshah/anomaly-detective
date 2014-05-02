@@ -9,3 +9,7 @@ if (!require("RHmm")) {
 if (!require("TTR")) {
   install.packages('FSelector',lib=usrLibrary,repos="http://cran.rstudio.com/",dependencies=TRUE)
 }
+
+if (!require("Rserve")) {
+  install.packages('FSelector',lib=usrLibrary,repos="http://cran.rstudio.com/",dependencies=TRUE)
+}
