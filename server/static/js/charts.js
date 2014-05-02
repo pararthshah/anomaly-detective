@@ -190,7 +190,7 @@ $(document).ready(function() {
                                         type: 'all',
                                         text: 'All'
                                 }],
-                                selected: 3
+                                selected: 5
                         },
                 yAxis: {
                     title: {
