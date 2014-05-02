@@ -112,6 +112,7 @@ MetricChart.prototype.addAnomalies = function(anomalies) {
  */
 MetricChart.prototype.removeAnomalies = function() {
     $.each(this.anomaliesId, (function(index, id) {
+        console.log(id);
         this.chart.xAxis[0].removePlotBand(id);
     }).bind(this));
 
@@ -120,8 +121,9 @@ MetricChart.prototype.removeAnomalies = function() {
         this.chart.series[1].remove();
     }
 
-    this.chart.anomalies = [];
-    this.chart.anomaliesId = [];
+    metricChart.chart.redraw();
+    this.anomalies = [];
+    this.anomaliesId = [];
 }
 
 /*
@@ -216,16 +218,25 @@ $(document).ready(function() {
         console.log(selectedMetric);
         // show preloader
         $("#loader-preloader").show("slow");
+        $("#load-error").hide();
 
         // fetch data from server
-        $.getJSON("/data", 
-            selectedMetric, 
-            function(response) {
+        $.ajax({
+            url: "/data", 
+            dataType: 'json',
+            data: selectedMetric,
+            success: function(response) {
                 convertTSData(response);
-                metricChart.chart.series[0].setData(response);
                 // Remove anomalies of last data, if any.
                 metricChart.removeAnomalies();
-                $("#loader-preloader").hide("slow");
+                metricChart.chart.series[0].setData(response);
+                $("#load-preloader").hide("slow");
+                $("#load-error").hide();
+            },
+            error: function(response) {
+                $("#load-error").show("slow");
+                $("#load-preloader").hide("slow");
+            }
         });
     });
 
@@ -267,7 +278,7 @@ $(document).ready(function() {
         console.log(params);
         // Show algorithm-preloader
         $("#algorithm-preloader").show('slow');
-        $("#algorithm-error").hide('slow');
+        $("#algorithm-error").hide();
 
         $.ajax({
             url: "/anomalies",
@@ -279,10 +290,11 @@ $(document).ready(function() {
                 console.log(response);
                 metricChart.removeAnomalies();
                 metricChart.addAnomalies(response);
-                $("#algorithm-preloader").hide('slow');
+                $("#algorithm-preloader").hide();
+                $("#algorithm-error").hide();
             },
             error: function(response) {
-                $("#algorithm-preloader").hide('slow');  
+                $("#algorithm-preloader").hide();
                 $("#algorithm-error").show('slow');
             }
         });

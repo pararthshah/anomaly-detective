@@ -44,6 +44,7 @@ $def with (name)
 							</div>
 							<button type="button" class="btn btn-primary" id="btn-get-metric">Load</button>
 							<div class="preloader" id="load-preloader" style="display:none"></div>
+							<span class="label label-danger" id="load-error" style="display:none">An error occurred.</span>
 						</div>
         </form>
         <!-- machine/mertric form ends-->
@@ -70,42 +71,41 @@ $def with (name)
                                 </div>
 																<!-- Algorithm parameters begin-->
                                 <div class="form-group" id="algorithm-params">
-									<h4>Parameters</h4>
+																	<h4>Parameters</h4>
 
-									<!-- Parameters for Moving Average begin -->
-									<div id="params-ma" style="display:none">
-										<div class="form-group">
-											<label>Window Size</label>
-											<input type="text" id="params-ma-window" class="form-control" placeholder="100" />
-										</div>
-										<div class="form-group">
-											<label>Threshold</label>
-											<input type="text" id="params-ma-threshold" class="form-control" placeholder="10" />
-										</div>
-									</div>
-									<!-- Parameters for Moving Average end-->
+																	<!-- Parameters for Moving Average begin -->
+																	<div id="params-ma" style="display:none">
+																		<div class="form-group">
+																			<label>Window Size</label>
+																			<input type="text" id="params-ma-window" class="form-control" placeholder="100" />
+																		</div>
+																		<div class="form-group">
+																			<label>Threshold</label>
+																			<input type="text" id="params-ma-threshold" class="form-control" placeholder="10" />
+																		</div>
+																	</div>
+																	<!-- Parameters for Moving Average end-->
 
-									<!--Parametes for HMM begin-->
-									<div id="params-hmm">
-										<div class="form-group">
-											<label>Number of states</label>
-											<input type="text" class="form-control" id="params-hmm-states" placeholder="4" />
-										</div>
-										<div class="form-group">
-											<label>Percentage</label>
-											<input type="text" class="form-control" id="params-hmm-percentage" placeholder="0.2" />
-										</div>
-									</div>
-									<!-- Parameters for HMM end-->
-                                </div>
-								<!--Algorithm parameters end-->
-								<button type="button" id="algorithm-submit" class="btn btn-primary">Submit</button>
-								<div class="preloader" id="algorithm-preloader" style="display:none"></div>
-                                <span class="label label-danger" id="algorithm-error" style="display:none">An error occurred.</span>
-
-                            </form>
-                            <!-- panel form ends-->
-                        </div>
+																	<!--Parametes for HMM begin-->
+																	<div id="params-hmm">
+																		<div class="form-group">
+																			<label>Number of states</label>
+																			<input type="text" class="form-control" id="params-hmm-states" placeholder="4" />
+																		</div>
+																		<div class="form-group">
+																			<label>Percentage</label>
+																			<input type="text" class="form-control" id="params-hmm-percentage" placeholder="0.2" />
+																</div>
+													</div>
+													<!-- Parameters for HMM end-->
+													</div>
+													<!--Algorithm parameters end-->
+													<button type="button" id="algorithm-submit" class="btn btn-primary">Submit</button>
+													<div class="preloader" id="algorithm-preloader" style="display:none"></div>
+													<span class="label label-danger" id="algorithm-error" style="display:none">An error occurred.</span>
+												</form>
+												<!-- panel form ends-->
+											</div>
                     </div>
                 </div>
 
