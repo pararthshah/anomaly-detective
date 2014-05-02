@@ -9,9 +9,11 @@ def convert(inpath, outpath):
 	if not os.path.exists(outpath):
 		os.makedirs(outpath)
 	index= 0
-	for (name, series) in read_folder(inpath):
+	for (name, series) in read_folder(inpath, names):
 		print index
 		index+= 1
+		outname = name[:-5] + ".json"
+		print outname
 		outfile= os.path.join(outpath, name)
 		fout= open(outfile, 'w')
 		fout.write(json.dumps(series))
@@ -20,7 +22,8 @@ def convert(inpath, outpath):
 
 if __name__=='__main__':
 	inpath= os.path.join(os.getcwd(), sys.argv[1])
-	outpath= os.path.join(os.getcwd(), sys.argv[2])
+	names= os.path.join(os.getcwd(), sys.argv[2])
+	outpath= os.path.join(os.getcwd(), sys.argv[3])
 
-	convert(inpath, outpath)
+	convert(inpath, names, outpath)
 
