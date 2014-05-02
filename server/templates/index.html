@@ -1,0 +1,90 @@
+$def with (name)
+
+<html>
+    <head>
+        <title>Anomaly Detective</title>
+        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="static/css/main.css" />
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+        <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src="//code.highcharts.com/stock/highstock.js"></script>
+        <!-- Move to main.js or something-->
+        <script type="text/javascript" src="static/js/charts.js"></script>
+    </head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h3 class="text-muted">Anomaly Detective: $name</h3>
+        </div>
+        <!-- Machine/metric form begins-->
+        <form role="form" class="form-inline" id="form-metric">
+            <div class="form-group">
+                <label for="machine-name" class="control-label">Machine Name</label>
+                <select class="form-control" id="machine-name">
+                    <!--Rendered through JS-->
+                    <option value="1">Dummy 1</option>
+                    <option value="2">Dummy 2</option>
+                    <option value="3">Dummy 3</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="metric-name" class="control-label">Metric Name</label>
+                <select class="form-control" id="metric-name">
+                    <!--Rendered through JS-->
+                    <option value="1">Dummy 1</option>
+                    <option value="2">Dummy 2</option>
+                    <option value="3">Dummy 3</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label form="metric-interval">Interval (s)</label>
+                <input type="text" class="form-control" />
+            </div>
+            <div class="form-group">
+                <button type="button" class="form-control btn btn-primary" id="btn-get-metric">Go</button>
+            </div>
+        </form>
+        <!-- machine/mertric form ends-->
+
+        <!-- chart container-->
+        <div id="chart-container">
+        </div>
+
+        <!-- controls begin-->
+        <div id="controls">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Detection Options</div>
+                        <div class="panel-body">
+                            <!-- panel form-->
+                            <form role="form">
+                                <div class="form-group">
+                                    <label for="algorithm">Algorithm</label>
+                                    <select id="algorithm" class="form-control">
+                                        <option value="MA">Moving Average</option>
+                                        <option value="HMM">Hidden Markov Model</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="algorithm-params">
+                                </div>
+                            </form>
+                            <!-- panel form ends-->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Annotation</div>
+                        <div class="panel-body">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!--controls end-->
+    </div><!--container ends-->
+</body>
+</html>

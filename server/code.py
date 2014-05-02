@@ -15,9 +15,11 @@ urls = (
     '/annotations', 'Annotations'
 )
 
+render = web.template.render('templates')
+
 class Index:
     def GET(self):
-        return "Hello, world!"
+        return render.test('Bob')
 
 class Metrics:
     def GET(self):
