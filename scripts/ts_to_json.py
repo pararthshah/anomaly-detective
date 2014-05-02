@@ -5,7 +5,7 @@ from read_folder import read_folder
 from read_timeseries import read_timeseries
 import json
 
-def convert(inpath, outpath):
+def convert(inpath, names, outpath):
 	if not os.path.exists(outpath):
 		os.makedirs(outpath)
 	index= 0
