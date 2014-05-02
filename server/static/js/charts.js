@@ -267,17 +267,28 @@ $(document).ready(function() {
         console.log(params);
         // Show algorithm-preloader
         $("#algorithm-preloader").show('slow');
+        $("#algorithm-error").hide('slow');
 
-        $.getJSON("/anomalies", 
-            params,
-            function(response) {
+        $.ajax({
+            url: "/anomalies",
+            params: params,
+            dataType: "json",
+            success: function(response) {
                 // Update 
                 convertAnomalyData(response);
                 console.log(response);
                 metricChart.removeAnomalies();
                 metricChart.addAnomalies(response);
                 $("#algorithm-preloader").hide('slow');
+            },
+            error: function(response) {
+                $("#algorithm-preloader").hide('slow');  
+                $("#algorithm-error").show('slow');
+            }
         });
+
+        $.getJSON("/anomalies", 
+            
     });
 
     // Show/hide appropriate parameters
