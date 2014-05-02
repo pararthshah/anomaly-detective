@@ -3,6 +3,13 @@ var metricsData; // Stores the machine, metric object.
 // red, yellow, purple, green/lime
 var anomalyColors = ['#EE454B', '#FFFB94', '#B499FF', '#BAFF7A'];
 
+function getSelectedMetric() {
+    return {
+        "machine" : $("#machine-name").val(),
+        "metric" : $("#metric-name").val()
+    }
+}
+
 /*
  * Adds the options from the array to the select element with the given jquery selector
  * Adds the value by default. Passing addKey=true (objects) will add the keys instead.
@@ -26,7 +33,11 @@ function addSelectOptions(elementSelector, data, addKey) {
  * Returns an array of plot band IDs.
  */
 function addAnomalies(chart, anomalies) {
+    var idArray = []
+
     $.each(anomalies, function(index, tuple) {
+        idArray.push(index)
+
         chart.xAxis[0].addPlotBand({
             from: tuple[0], 
             to: tuple[1],
@@ -39,6 +50,8 @@ function addAnomalies(chart, anomalies) {
             }
         });
     });
+
+    return idArray;
 }
 
 $(document).ready(function() {
@@ -74,11 +87,11 @@ $(document).ready(function() {
                                         count: 1,
                                         text: '1m'
                                 }, {
-                                        type: 'hour',
-                                        count: 1,
+                                        type: 'minute',
+                                        count: 60,
                                         text: '1h'
                                 }, {
-                                        type: 'd',
+                                        type: 'day',
                                         count: 1,
                                         text: '1d'
                                 },{
@@ -99,7 +112,7 @@ $(document).ready(function() {
                     text: 'Built chart in ...' // dummy text to reserve space for dynamic subtitle
                 },
                 series: [{
-                            name: 'Timeseries',
+                            name: 'Metric',
                             data: data,
                             tooltip: {
                                 valueDecimals: 1,
@@ -112,12 +125,15 @@ $(document).ready(function() {
     });
 
     $("#btn-get-metric").click(function() { 
-        var selectedMachine = $("#machine-name").val();
-        var selectedMetric = $("#metric-name").val();
+        var selectedMetric = getSelectedMetric();
         // fetch data from server
         $.getJSON("/data", 
-            { machine : selectedMachine, metric : selectedMetric },
+            selectedMetric, 
             function(response) {
+                // Convert UNIX epoch to milliseconds
+                for(var i=0; i<response.length;i++) {
+                    response[i][0] *= 1000; 
+                }
                 metricChart.series[0].setData(response);
         });
     });
@@ -135,5 +151,30 @@ $(document).ready(function() {
         var selectedMachine = $(this).val();
         addSelectOptions("#metric-name", metricsData[selectedMachine]);
         $("#metric-name").attr('disabled', false);
+    });
+
+    // Fetch anomalies
+    $("#algorithm-submit").click(function(event) { 
+        var selectedAlgorithm = $("#algorithm-name").val();
+        var selectedMetric = getSelectedMetric();
+        var params = {};
+
+        if(selectedAlgorithm === "MA") {
+            var windowSize = $("#params-ma-window").val();
+            params = $.extend(selectedMetric, { "window" : windowSize });
+        } 
+        else if(selectedAlgorithm == "HMM") {
+            var numOfStates = $("#params-hmm-states").val(); 
+            params = $.extend(selectedMetric, { "states" : numOfStates });
+        } 
+        else {
+            throw new Exception('Not Supported');    
+        }
+
+        $.getJSON("/anomalies", 
+            params,
+            function(response) {
+                console.log(response);
+            });
     });
 });

@@ -62,7 +62,7 @@ $def with (name)
                             <form role="form">
                                 <div class="form-group">
 																	<h4 for="algorithm">Algorithm</h4>
-                                    <select id="algorithm" class="form-control">
+                                    <select id="algorithm-name" class="form-control">
                                         <option value="MA">Moving Average</option>
                                         <option value="HMM">Hidden Markov Model</option>
                                     </select>
@@ -70,14 +70,24 @@ $def with (name)
 																<!-- Algorithm parameters begin-->
                                 <div class="form-group" id="algorithm-params">
 																	<h4>Parameters</h4>
-																	<!--Parametes for HMM begin-->
-																	<div id="params-hmm" class="hiden">
-																		<label>Number of states</label>
-																		<input type="text" class="form-control" placeholder="4" />
+
+																	<!-- Parameters for Moving Average begin -->
+																	<div id="params-ma">
+																		<label>Window Size</label>
+																		<input type="text" id="params-ma-window" class="form-control" placeholder="100" />
 																	</div>
-                                </div>
+																	<!-- Parameters for Moving Average end-->
+
+																	<!--Parametes for HMM begin-->
+																	<div id="params-hmm" class="hidden">
+																		<label>Number of states</label>
+																		<input type="text" class="form-control" id="params-hmm-states" placeholder="4" />
+																	</div>
+																	<!-- Parameters for HMM end-->
+																</div>
 																<!--Algorithm parameters end-->
-																<button id="algorithm-submit" class="btn btn-primary">Submit</button>
+																<button type="button" id="algorithm-submit" class="btn btn-primary">Submit</button>
+																<div class="preloader" id="algorithm-preloader"></div>
                             </form>
                             <!-- panel form ends-->
                         </div>

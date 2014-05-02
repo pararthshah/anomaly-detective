@@ -2,7 +2,7 @@ import pyRserve
 import os, sys
 import config
 
-reqd_packages = ["RHmm"]
+reqd_packages = ["RHmm", "TTR"]
 reqd_sources = ["anomalies.r"]
 
 class RGateway:
