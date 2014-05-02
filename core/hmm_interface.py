@@ -2,11 +2,12 @@ import pyRserve
 import os, sys
 from scripts.read_timeseries import read_timeseries
 from scripts.ts_functions import bucketize
+import server.config as config
 
 def run_hmm(series, nStates):	# accepts path to timeseries data, returns clusters of points
 	conn= pyRserve.connect()
 	srcpath= os.getcwd()	# assumes that hmm.r is in the same directory as this python file
-	conn.eval('setwd("' + srcpath + '")')
+	conn.eval('setwd("' + config.CORE_DIR + '")')
 	conn.eval('source("hmm.r")')
 	conn.eval('library("RHmm")')
 	conn.r.sc= series
@@ -22,12 +23,15 @@ def get_anomalies(path, n_states, ratio):
 	v= run_hmm(new_series, n_states)
 	v= map(lambda x: int(x), v)
 	hist= get_histogram(v)		# return sorted histogram
+	print hist
 	n_flagged= 0
 	flagged_values= list()
 	for index, value in enumerate(hist):
 		if n_flagged < len(v) * ratio:
+			print n_flagged, len(v), ratio, len(v) * ratio, " done "
 			n_flagged+= value
 			flagged_values.append(index+1)
+
 
 	print flagged_values, n_flagged	, float(n_flagged)/len(v)
 	# get intervals

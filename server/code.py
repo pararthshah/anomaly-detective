@@ -9,6 +9,7 @@ sys.path.insert(0, config.SCRIPTS_DIR)
 
 import read_timeseries
 from rserve import RGateway
+from core.hmm_interface import get_anomalies
 
 urls = (
     '/', 'Index',
@@ -20,7 +21,7 @@ urls = (
 
 render = web.template.render('templates')
 
-r_gateway = RGateway()
+#r_gateway = RGateway()
 
 class Index:
     def GET(self):
@@ -46,17 +47,23 @@ class Data:
             json_str = str_file.read()
             return json_str
 
-
 class Anomalies:
     def GET(self):
         params = web.input()
-        try:
-            filename = params.machine + "-" + params.metric + ".data"
-            path = os.path.join(config.TS_DIR, filename)
-            anomalies = r_gateway.detect_SMA(path, int(params.window), float(params.threshold))
-            return anomalies
-        except Exception, e:
-            return str(e)
+	if params.method=='SMA':
+		try:
+		    filename = params.machine + "-" + params.metric + ".data"
+		    path = os.path.join(config.TS_DIR, filename)
+		    anomalies = r_gateway.detect_SMA(path, int(params.window), float(params.threshold))
+		    return anomalies
+		except Exception, e:
+		    return str(e)
+	elif params.method=='HMM':
+		filename = params.machine + "-" + params.metric + ".data"
+		path = os.path.join(os.getcwd(), "../data/week1/timeseries", filename)
+		anomalies= get_anomalies(path, int(params.n_states), float(params.percentage)/100)
+		return json.dumps(anomalies)
+			
 
 class Annotations:
     def POST(self):

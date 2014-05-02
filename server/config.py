@@ -9,6 +9,8 @@ BASE_DIR = os.path.abspath(os.path.join(SERVER_DIR, os.pardir))
 
 SCRIPTS_DIR = os.path.join(BASE_DIR, "scripts")
 
+CORE_DIR = os.path.join(BASE_DIR, "core")
+
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
 TS_DIR = os.path.join(DATA_DIR, "timeseries_json")
