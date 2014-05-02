@@ -286,9 +286,6 @@ $(document).ready(function() {
                 $("#algorithm-error").show('slow');
             }
         });
-
-        $.getJSON("/anomalies", 
-            
     });
 
     // Show/hide appropriate parameters
