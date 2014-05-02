@@ -27,19 +27,16 @@ class Metrics:
     def GET(self):
         params = web.input(name="important")
         try:
-            imp_file = open(os.path.join(config.DATA_DIR, name+".json"))    
+            imp_file = open(os.path.join(config.DATA_DIR, params.name+".json"))    
             imp_json = imp_file.read()
             return imp_json
-        except:
-            return "Error"
+        except Exception, e:
+            return str(e)
 
 class Data:
     def GET(self):
         params = web.input()
         web.header('Content-Type', 'application/json')
-        # TODO: This is needed for CORS (AJAX)- Currently, our HTTP and
-        # API servers are on different domains. Consider removing/refactoring.
-        #web.header('Access-Control-Allow-Origin', '*')
         filename = params.machine + "-" + params.metric + ".data"
         path = os.path.join(config.TS_DIR, filename)
         with open(path) as str_file:
