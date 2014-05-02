@@ -11,7 +11,9 @@ SCRIPTS_DIR = os.path.join(BASE_DIR, "scripts")
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
-TS_DIR = os.path.join(DATA_DIR, "timeseries_json")
+TS_DIR = os.path.join(DATA_DIR, "timeseries")
+
+TS_JSON_DIR = os.path.join(DATA_DIR, "timeseries_json")
 
 ANOMALIES_DIR = os.path.join(DATA_DIR, "anomalies")
 
