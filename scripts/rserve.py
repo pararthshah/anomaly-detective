@@ -14,7 +14,7 @@ class RGateway:
         for src in reqd_sources:
             self.conn.voidEval('source("' + src + '")')
 
-    def detect_SMA(self, path, window=100, threshold=100):
+    def detect_SMA(self, path, window=100, threshold=3.0):
         streval= 'v <- detect_SMA("' + path + '", window=' + str(window) + '", threshold=' + str(threshold) + ')'
         print streval
         self.conn.voidEval(streval)
