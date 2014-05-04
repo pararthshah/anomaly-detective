@@ -20,7 +20,7 @@ def detect_SMA(path, window, threshold):
     series = read_timeseries(path)
     s_ma = moving_avg(np.array(map(lambda x:x[1],series)),window)
     anomalies = []
-    for i in range(window+1,len(series)):
-        if abs(1.0(s_ma[i]-series[i][1])) >= threshold:
+    for i in range(window+1,len(series)-window):
+        if abs(float(s_ma[i]-series[i][1])) >= threshold:
             anomalies.append([series[i][0],series[i][0]])
     return anomalies

@@ -51,12 +51,12 @@ class Anomalies:
     def GET(self):
         print "hello world"
         params = web.input()
-        if params.method=='SMA':
+        if params.method=='MA':
             try:
                 filename = params.machine + "-" + params.metric + ".data"
                 path = os.path.join(config.TS_DIR, filename)
                 anomalies = detect_SMA(path, int(params.window), float(params.threshold))
-                return anomalies
+                return json.dumps(anomalies)
             except Exception, e:
                 print e
                 return str(e)
