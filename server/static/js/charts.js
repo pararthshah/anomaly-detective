@@ -279,26 +279,36 @@ $(document).ready(function() {
         console.log(params);
         // Show algorithm-preloader
         $("#algorithm-preloader").show('slow');
-        $("#algorithm-error").hide();
+        //$("#algorithm-error").hide('slow');
 
-        $.ajax({
-            url: "/anomalies",
-            data: params,
-            dataType: "json",
-            success: function(response) {
+        $.getJSON("/anomalies", 
+            params,
+            function(response) {
                 // Update 
                 convertAnomalyData(response);
                 console.log(response);
                 metricChart.removeAnomalies();
                 metricChart.addAnomalies(response);
-                $("#algorithm-preloader").hide();
-                $("#algorithm-error").hide();
-            },
-            error: function(response) {
-                $("#algorithm-preloader").hide();
-                $("#algorithm-error").show('slow');
-            }
+                $("#algorithm-preloader").hide('slow');
         });
+
+        // $.ajax({
+        //     url: "/anomalies",
+        //     data: params,
+        //     dataType: "json",
+        //     success: function(response) {
+        //         // Update 
+        //         convertAnomalyData(response);
+        //         console.log(response);
+        //         metricChart.removeAnomalies();
+        //         metricChart.addAnomalies(response);
+        //         $("#algorithm-preloader").hide('slow');
+        //     },
+        //     error: function(response) {
+        //         $("#algorithm-preloader").hide('slow');  
+        //         $("#algorithm-error").show('slow');
+        //     }
+        // });
     });
 
     // Show/hide appropriate parameters
