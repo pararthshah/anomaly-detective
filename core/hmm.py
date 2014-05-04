@@ -149,7 +149,7 @@ def get_anomalies(path, n_states, ratio):
     series= read_timeseries(path)
     print "length of series= ", series[-1][0]
     factor= 15
-    new_series= bucketize(series, len(series)/15)
+    new_series= bucketize(series, len(series)/factor)
     likelihoods= get_likelihoods(new_series, n_states)
 
     # now find the mean and standard deviation of the likelihoods and assume that they are gaussian to find lowest percent of likelihoods
@@ -160,10 +160,10 @@ def get_anomalies(path, n_states, ratio):
     anomalies= list()
     index= 0 
     while index < len(ll_index):
-        start_time= series[ll_index[index]*15][0]
+        start_time= series[ll_index[index]*factor][0]
         while index < len(ll_index)-1 and ll_index[index + 1] == ll_index[index] + 1:
             index+= 1
-        end_time= series[ll_index[index]*15 + 1][0]
+        end_time= series[ll_index[index]*factor + 1][0]
         anomalies.append((start_time, end_time))
         index+= 1
     return anomalies
