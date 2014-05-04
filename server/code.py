@@ -7,10 +7,9 @@ import config
 
 sys.path.insert(0, config.BASE_DIR)
 
-#import read_timeseries
-#from rserve import RGateway
 from core.hmm_interface import get_anomalies
 from scripts.ma import detect_SMA
+from core import hmm
 
 urls = (
     '/', 'Index',
@@ -50,6 +49,7 @@ class Data:
 
 class Anomalies:
     def GET(self):
+        print "hello world"
         params = web.input()
         if params.method=='SMA':
             try:
@@ -62,8 +62,9 @@ class Anomalies:
                 return str(e)
         elif params.method=='HMM':
             filename = params.machine + "-" + params.metric + ".data"
-            path = os.path.join(config.TS_DIR, filename)
-            anomalies= get_anomalies(path, int(params.n_states), float(params.percentage)/100)
+            path = os.path.join(os.getcwd(), config.TS_DIR, filename)
+            anomalies= hmm.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
+            print "anomalies", anomalies
             return json.dumps(anomalies)
 
 class Annotations:
