@@ -116,8 +116,9 @@ MetricChart.prototype.removeAnomalies = function() {
         this.chart.xAxis[0].removePlotBand(id);
     }).bind(this));
 
-    // All series above [0] are flags. Remove them.
-    while(this.chart.series.length > 1) {
+    // All series above [1] are flags. Remove them. 
+    // Series [0] and [1] are the actual series and the preview below.
+    while(this.chart.series.length > 2) {
         this.chart.series[1].remove();
     }
 
@@ -217,7 +218,7 @@ $(document).ready(function() {
         var selectedMetric = getSelectedMetric();
         console.log(selectedMetric);
         // show preloader
-        $("#loader-preloader").show("slow");
+        $("#load-preloader").show("slow");
         $("#load-error").hide();
 
         // fetch data from server
@@ -230,12 +231,12 @@ $(document).ready(function() {
                 // Remove anomalies of last data, if any.
                 metricChart.removeAnomalies();
                 metricChart.chart.series[0].setData(response);
-                $("#load-preloader").hide("slow");
+                $("#load-preloader").hide();
                 $("#load-error").hide();
             },
             error: function(response) {
                 $("#load-error").show("slow");
-                $("#load-preloader").hide("slow");
+                $("#load-preloader").hide();
             }
         });
     });
