@@ -4,6 +4,9 @@
 // @property anomaliesId - Array of anomaly plot band ids. Useful for removing later.
 var metricChart;
 var metricChartId = "metricChart";
+var minTime = 1395723600;
+var dateStart = new Date(0);
+dateStart.setUTCSeconds(minTime);
 
 var metricsData; // Stores the machine, metric object.
 // red, yellow, purple, green/lime
@@ -32,6 +35,10 @@ function MetricChart(chart) {
 function showMetricsForMachine(selectedMachine) {
     addSelectOptions("#metric-name", metricsData[selectedMachine]);
     $("#metric-name").attr('disabled', false);
+}
+
+MetricChart.prototype.updateData = function(data) {
+    this.chart.series[0].setData(data);
 }
 
 /*
@@ -163,10 +170,8 @@ MetricChart.prototype.removeAnomalies = function() {
  * Convert UNIX epoch to milliseconds by multiplying each x value with 1000.
  */
 function convertTSData(tsData) {
-    var minTime = 1395723600;
-
     for(var i=0; i<tsData.length;i++) {
-        tsData[i][0] = (tsData[i][0] + minTime)*1000;
+        tsData[i][0] = (parseInt(tsData[i][0]) + minTime)*1000;
     }
     return tsData;
 }
@@ -176,78 +181,65 @@ function convertTSData(tsData) {
  * Convert UNIX epoch to milliseconds by multiplying each x and y value with 1000.
  */
 function convertAnomalyData(anomalyData) {
+    convertedAnomalyData = []
     for(var i=0; i<anomalyData.length;i++) {
-        anomalyData[i][0] *= 1000;
-        anomalyData[i][1] *= 1000;
+        var startTime = (anomalyData[i][0] + minTime)*1000;
+        var endTime = (anomalyData[i][1] + minTime)*1000;
+        convertedAnomalyData.push([startTime, endTime]);
     }
-    return anomalyData;
+    return convertedAnomalyData;
 }
 
 $(document).ready(function() {
-    $(function() {
-        $.getJSON('http://www.highcharts.com/samples/data/jsonp.php?filename=large-dataset.json&callback=?', function(data) {
-            // Create a timer
-            var start = + new Date();
-
-            // Create the chart
-            $('#chart-container').highcharts('StockChart', {
-                    chart: {
-                        type:'line',
-                        events: {
-                            load: function(chart) {
-                                this.setTitle(null, {
-                                    text: 'Built chart in '+ (new Date() - start) +'ms'
-                                });
-        
-                                metricChart = new MetricChart($("#chart-container").highcharts());
-                            }
-                        },
-                        zoomType: 'x'
-                    },
-                    rangeSelector: {
-                        inputEnabled: $('#chart-container').width() > 480,
-                                buttons: [{
-                                        type: 'second',
-                                        count: 10,
-                                        text: '10s'
-                                }, {
-                                        type: 'minute',
-                                        count: 1,
-                                        text: '1m'
-                                }, {
-                                        type: 'minute',
-                                        count: 60,
-                                        text: '1h'
-                                }, {
-                                        type: 'day',
-                                        count: 1,
-                                        text: '1d'
-                                },{
-                                        type: 'all',
-                                        text: 'All'
-                                }],
-                                selected: 5
-                        },
-                yAxis: {
-                    title: {
-                        text: 'Timestamp'
-                    }
+    // Create the chart
+    $('#chart-container').highcharts('StockChart', {
+            chart: {
+                    type:'line',
+                    zoomType: 'x'
+            },
+            rangeSelector: {
+                inputEnabled: $('#chart-container').width() > 480,
+                        buttons: [{
+                                type: 'second',
+                                count: 10,
+                                text: '10s'
+                        }, {
+                                type: 'minute',
+                                count: 1,
+                                text: '1m'
+                        }, {
+                                type: 'minute',
+                                count: 60,
+                                text: '1h'
+                        }, {
+                                type: 'day',
+                                count: 1,
+                                text: '1d'
+                        },{
+                                type: 'all',
+                                text: 'All'
+                        }],
+                        selected: 5
                 },
-                    title: {
-                        text: 'Timeseries'
-                },
-                subtitle: {
-                    text: 'Built chart in ...' // dummy text to reserve space for dynamic subtitle
-                },
-                series: [{
-                            name: 'Metric',
-                            id: metricChartId,
-                            data: data,
-                }]
-            });
-        });
-
+        yAxis: {
+            title: {
+                text: 'Timestamp'
+            }
+        },
+            title: {
+                text: 'Timeseries'
+        },
+        subtitle: {
+            text: 'Built chart in ...' // dummy text to reserve space for dynamic subtitle
+        },
+        series: [{
+                    name: 'Metric',
+                    id: metricChartId,
+                    pointStart: dateStart
+            }]
     });
+
+    metricChart = new MetricChart($("#chart-container").highcharts());
 
     $("#btn-get-metric").click(function() { 
         var selectedMetric = getSelectedMetric();
@@ -267,8 +259,7 @@ $(document).ready(function() {
                 updateStats(response);
                 var data = convertTSData(response);
                 // Remove anomalies of last data, if any.
-                metricChart.chart.series[0].setData(data);
-                // Also set stats for this series
+                metricChart.updateData(data);
                 $("#load-preloader").hide();
                 $("#load-error").hide();
             },
@@ -323,7 +314,7 @@ $(document).ready(function() {
         console.log(params);
         // Show algorithm-preloader
         $("#algorithm-preloader").show('slow');
-        //$("#algorithm-error").hide('slow');
+        $("#algorithm-error").hide();
 
          $.ajax({
              url: "/anomalies",
@@ -335,11 +326,12 @@ $(document).ready(function() {
                  console.log(data);
                  metricChart.removeAnomalies();
                  metricChart.addAnomalies(data);
-                 $("#algorithm-preloader").hide('slow');
+                 $("#algorithm-preloader").hide();
+                 $("#algorithm-error").hide();
              },
              error: function(response) {
                  console.log(response);
-                 $("#algorithm-preloader").hide('slow');  
+                 $("#algorithm-preloader").hide();
                  $("#algorithm-error").show('slow');
              }
          });
