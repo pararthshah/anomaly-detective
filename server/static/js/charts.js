@@ -12,7 +12,8 @@ var anomalyColor='#EE454B';
 // Algorithm name cache - such informative. wow.
 var algorithmNameCache = {
     "MA" : "MA",
-    "HMM" : "HMM"
+    "HMM" : "HMM",
+    "NAIVE" : "NAIVE"
 }
 
 /*
@@ -31,6 +32,36 @@ function MetricChart(chart) {
 function showMetricsForMachine(selectedMachine) {
     addSelectOptions("#metric-name", metricsData[selectedMachine]);
     $("#metric-name").attr('disabled', false);
+}
+
+/*
+ * Updates the stats on the page - min, max, range
+ */
+function updateStats(data) {
+    var miny = Number.POSITIVE_INFINITY, maxy = Number.NEGATIVE_INFINITY;
+    var  minx = Number.POSITIVE_INFINITY, maxx = Number.NEGATIVE_INFINITY;
+    var mean = 0, n = data.length, variance = 0;
+
+    for (var i = 0;i<n;i++) {
+        minx = Math.min(data[i][0], minx);
+        maxx = Math.max(data[i][0], maxx);
+        miny = Math.min(data[i][1], miny);
+        maxy = Math.max(data[i][1], maxy);
+        mean += data[i][1];
+    } 
+
+    for (var i = 0; i < n; i++) {
+        variance += Math.pow(data[i][1] - mean, 2);
+    }
+    
+    mean = mean/n;   
+    variance = variance/(n-1);
+
+    $("#stats-min").html(miny.toFixed(2));
+    $("#stats-max").html(maxy.toFixed(2));
+    $("#stats-range").html(miny.toFixed(2) + " - " + maxy.toFixed(2));
+    $("#stats-mean").html(mean.toFixed(2));
+    $("#stats-variance").html(variance.toFixed(2));
 }
 
 /*
@@ -112,14 +143,13 @@ MetricChart.prototype.addAnomalies = function(anomalies) {
  */
 MetricChart.prototype.removeAnomalies = function() {
     $.each(this.anomaliesId, (function(index, id) {
-        console.log(id);
         this.chart.xAxis[0].removePlotBand(id);
     }).bind(this));
 
     // All series above [1] are flags. Remove them. 
     // Series [0] and [1] are the actual series and the preview below.
     while(this.chart.series.length > 2) {
-        this.chart.series[1].remove();
+        this.chart.series[2].remove();
     }
 
     metricChart.chart.redraw();
@@ -135,6 +165,7 @@ function convertTSData(tsData) {
     for(var i=0; i<tsData.length;i++) {
         tsData[i][0] *= 1000;
     }
+    return tsData;
 }
 
 /*
@@ -146,6 +177,7 @@ function convertAnomalyData(anomalyData) {
         anomalyData[i][0] *= 1000;
         anomalyData[i][1] *= 1000;
     }
+    return anomalyData;
 }
 
 $(document).ready(function() {
@@ -228,9 +260,12 @@ $(document).ready(function() {
             dataType: 'json',
             data: selectedMetric,
             success: function(response) {
-                convertTSData(response);
+                // Update the stats on the page (before converting to milliseconds.)
+                updateStats(response);
+                var data = convertTSData(response);
                 // Remove anomalies of last data, if any.
-                metricChart.chart.series[0].setData(response);
+                metricChart.chart.series[0].setData(data);
+                // Also set stats for this series
                 $("#load-preloader").hide();
                 $("#load-error").hide();
             },
@@ -260,18 +295,23 @@ $(document).ready(function() {
         var selectedMetric = getSelectedMetric();
         var params = {};
 
-        if(selectedAlgorithm === algorithmNameCache["MA"]) {
+        if (selectedAlgorithm === algorithmNameCache["MA"]) {
             var windowSize = $("#params-ma-window").val();
             var threshold = $("#params-ma-threshold").val();
             var method = algorithmNameCache["MA"];
             params = $.extend(selectedMetric, { "window" : windowSize, "threshold" : threshold, "method" : method });
         } 
-        else if(selectedAlgorithm == algorithmNameCache["HMM"]) {
+        else if (selectedAlgorithm === algorithmNameCache["NAIVE"]) {
             var numOfStates = $("#params-hmm-states").val(); 
             var percentage = $("#params-hmm-percentage").val();
             var method = algorithmNameCache["HMM"];
             params = $.extend(selectedMetric, { "n_states" : numOfStates, "percentage" : percentage, "method" : method });
         } 
+        else if (selectedAlgorithm === algorithmNameCache["NAIVE"]) {
+            var deviationFactor = $("#params-naive-deviation").val();
+            var method = algorithmNameCache["NAIVE"];
+            params = $.extend(selectedMetric, { "deviation_factor" : deviationFactor });    
+        }
         else {
             throw new Exception('Not Supported');    
         }
@@ -287,10 +327,10 @@ $(document).ready(function() {
              dataType: "json",
              success: function(response) {
                  // Update 
-                 convertAnomalyData(response);
-                 console.log(response);
+                 var data = convertAnomalyData(response);
+                 console.log(data);
                  metricChart.removeAnomalies();
-                 metricChart.addAnomalies(response);
+                 metricChart.addAnomalies(data);
                  $("#algorithm-preloader").hide('slow');
              },
              error: function(response) {
@@ -304,14 +344,9 @@ $(document).ready(function() {
     // Show/hide appropriate parameters
     $("#algorithm-name").change(function(event) {
         var selectedAlgorithm = event.target.value;
-        var paramSelector;
+        var paramSelector = "#params-" + algorithmNameCache[selectedAlgorithm].toLowerCase();
 
-        if(selectedAlgorithm === algorithmNameCache["MA"]) {
-            paramSelector = "#params-ma";       
-        } else if(selectedAlgorithm === algorithmNameCache["HMM"]) {
-            paramSelector = "#params-hmm"
-        }
-         // Hide all other params div.
+        // Hide all other params div.
         $("div[id^=params]").hide('fast', function() {
             $(paramSelector).show('fast');
         });
