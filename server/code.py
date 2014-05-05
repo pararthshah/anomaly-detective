@@ -7,9 +7,10 @@ import config
 
 sys.path.insert(0, config.BASE_DIR)
 
-from core.hmm_interface import get_anomalies
+from core import hmm_interface
 from scripts.ma import detect_SMA
 from core import hmm
+from core import naive
 
 urls = (
     '/', 'Index',
@@ -61,11 +62,32 @@ class Anomalies:
                 print e
                 return str(e)
         elif params.method=='HMM':
-            filename = params.machine + "-" + params.metric + ".data"
-            path = os.path.join(os.getcwd(), config.TS_DIR, filename)
-            anomalies= hmm.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
-            print "anomalies", anomalies
-            return json.dumps(anomalies)
+            try:
+                filename = params.machine + "-" + params.metric + ".data"
+                path = os.path.join(os.getcwd(), config.TS_DIR, filename)
+                anomalies= hmm_interface.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
+                return json.dumps(anomalies)
+            except Exception, e:
+                print e
+                return str(e)
+        elif params.method=='HMML':
+            try:
+                filename = params.machine + "-" + params.metric + ".data"
+                path = os.path.join(os.getcwd(), config.TS_DIR, filename)
+                anomalies= hmm.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
+                return json.dumps(anomalies)
+            except Exception, e:
+                print e
+                return str(e)
+        elif params.method== 'NAIVE':
+            try:
+                filename = params.machine + "-" + params.metric + ".data"
+                path = os.path.join(os.getcwd(), config.TS_DIR, filename)
+                anomalies= naive.get_anomalies(path, float(params.deviation_factor))
+                return json.dumps(anomalies)
+            except Exception, e:
+                print e
+                return str(e)
 
 class Annotations:
     def POST(self):
