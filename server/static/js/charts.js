@@ -321,9 +321,9 @@ $(document).ready(function() {
              data: params,
              dataType: "json",
              success: function(response) {
+                 console.log(response);
                  // Update 
                  var data = convertAnomalyData(response);
-                 console.log(data);
                  metricChart.removeAnomalies();
                  metricChart.addAnomalies(data);
                  $("#algorithm-preloader").hide();
