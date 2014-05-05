@@ -35,7 +35,6 @@ def get_anomalies(path, mul_dev):
     return anomalies
 
 def get_anomalies_from_series(series, mul_dev):     # accepts a series instead of a path. Also does not bucketize list.
-    series= read_timeseries(path)
     outliers= find_outliers(map(lambda x:x[1], series), mul_dev)
     index= 0
     anomalies= list()

@@ -52,42 +52,25 @@ class Anomalies:
     def GET(self):
         print "hello world"
         params = web.input()
-        if params.method=='MA':
-            try:
-                filename = params.machine + "-" + params.metric + ".data"
-                path = os.path.join(config.TS_DIR, filename)
+        filename = params.machine + "-" + params.metric + ".data"
+        path = os.path.join(config.TS_DIR, filename)
+        try:
+            if params.method=='MA':
                 anomalies = detect_SMA(path, int(params.window), float(params.threshold))
                 return json.dumps(anomalies)
-            except Exception, e:
-                print e
-                return str(e)
-        elif params.method=='HMM':
-            try:
-                filename = params.machine + "-" + params.metric + ".data"
-                path = os.path.join(os.getcwd(), config.TS_DIR, filename)
+            elif params.method=='HMM':
                 anomalies= hmm_interface.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
                 return json.dumps(anomalies)
-            except Exception, e:
-                print e
                 return str(e)
-        elif params.method=='HMML':
-            try:
-                filename = params.machine + "-" + params.metric + ".data"
-                path = os.path.join(os.getcwd(), config.TS_DIR, filename)
+            elif params.method=='HMML':
                 anomalies= hmm.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
                 return json.dumps(anomalies)
-            except Exception, e:
-                print e
-                return str(e)
-        elif params.method== 'NAIVE':
-            try:
-                filename = params.machine + "-" + params.metric + ".data"
-                path = os.path.join(os.getcwd(), config.TS_DIR, filename)
+            elif params.method== 'NAIVE':
                 anomalies= naive.get_anomalies(path, float(params.deviation_factor))
                 return json.dumps(anomalies)
-            except Exception, e:
-                print e
-                return str(e)
+        except Exception, e:
+            print e
+            return str(e)
 
 class Annotations:
     def POST(self):
