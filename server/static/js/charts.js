@@ -230,7 +230,7 @@ $(document).ready(function() {
                 text: 'Timeseries'
         },
         subtitle: {
-            text: 'Built chart in ...' // dummy text to reserve space for dynamic subtitle
+            text: '' // dummy text to reserve space for dynamic subtitle
         },
         series: [{
                     name: 'Metric',

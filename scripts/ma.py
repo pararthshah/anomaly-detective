@@ -30,7 +30,8 @@ def detect_SMA(path, window, threshold):
         dist = abs(float(s_ma[i]-series[i][1]))
         #if dist >= values.ptp()*threshold:
         anomalies.append((i, series[i][0], dist))
-    filtered_anomalies = naive.get_anomalies_from_series(map(lambda x:x[1:],anomalies),3)
+    filtered_anomalies = naive.get_anomalies_from_series(map(lambda x:x[1:],anomalies),4)
+    print len(filtered_anomalies)
     return filtered_anomalies
     # if len(anomalies) <= 1:
     #     return map(lambda x:[x[1],x[1]], anomalies)

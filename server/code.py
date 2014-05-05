@@ -57,12 +57,12 @@ class Anomalies:
         try:
             if params.method=='MA':
                 anomalies = detect_SMA(path, int(params.window), float(params.threshold))
-                return json.dumps(anomalies)
-            elif params.method=='HMM':
+                return json.dumps(anomalies[:15])
+            elif params.method=='HMML':
                 anomalies= hmm_interface.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
                 return json.dumps(anomalies)
                 return str(e)
-            elif params.method=='HMML':
+            elif params.method=='HMM':
                 anomalies= hmm.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
                 return json.dumps(anomalies)
             elif params.method== 'NAIVE':
