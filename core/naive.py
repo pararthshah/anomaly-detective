@@ -34,10 +34,25 @@ def get_anomalies(path, mul_dev):
         index+= 1
     return anomalies
 
+def get_anomalies_from_series(series, mul_dev):     # accepts a series instead of a path. Also does not bucketize list.
+    series= read_timeseries(path)
+    outliers= find_outliers(map(lambda x:x[1], series), mul_dev)
+    index= 0
+    anomalies= list()
+    while index < len(outliers):
+        start_time= series[outliers[index]][0]
+        while index < len(outliers)-1 and outliers[index + 1] == outliers[index] + 1:
+            index+= 1
+        end_time= series[outliers[index] + 1][0]
+        anomalies.append((start_time, end_time))
+        index+= 1
+    return anomalies
+
 if __name__=='__main__':
     path= os.path.join(os.getcwd(), sys.argv[1])
     mul_dev= float(sys.argv[2])
-    anomalies= get_anomalies(path, mul_dev)
+    #anomalies= get_anomalies(path, mul_dev)
+    anomalies= get_anomalies_from_series(read_timeseries(path), mul_dev)
     print anomalies
     print len(anomalies)
 
