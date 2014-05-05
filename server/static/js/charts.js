@@ -223,11 +223,16 @@ $(document).ready(function() {
                 },
         yAxis: {
             title: {
+                text: 'Value'
+            }
+        },
+        xAxis: {
+            title: {
                 text: 'Timestamp'
             }
         },
-            title: {
-                text: 'Timeseries'
+        title: {
+                text: 'Metric'
         },
         subtitle: {
             text: '' // dummy text to reserve space for dynamic subtitle
