@@ -18,9 +18,31 @@ def moving_avg(values,window):
 
 def detect_SMA(path, window, threshold):
     series = read_timeseries(path)
-    s_ma = moving_avg(np.array(map(lambda x:x[1],series)),window)
+    values = np.array(map(lambda x:x[1],series))
+    s_ma = moving_avg(values,window)
     anomalies = []
     for i in range(window+1,len(series)-window):
-        if abs(float(s_ma[i]-series[i][1])) >= threshold:
-            anomalies.append([series[i][0],series[i][0]])
-    return anomalies
+        dist = abs(float(s_ma[i]-series[i][1]))
+        if dist >= values.ptp()*threshold:
+            anomalies.append((i, series[i][0], dist))
+    if len(anomalies) <= 1:
+        return map(lambda x:[x[1],x[1]], anomalies)
+    intervals = []
+    start = anomalies[0]
+    end = start
+    dist = anomalies[0][2]
+    for val in anomalies[1:]:
+        if val[0] - end[0] <= 4:
+            end = val
+            dist += val[2]
+        else:
+            intervals.append(([start[1]-100, end[1]+100], dist))
+            start = val
+            end = start
+            dist = val[2]
+    intervals.append(([start[1]-100, end[1]+100], dist))
+    intervals.sort(key=lambda x:x[1],reverse=True)
+    if len(intervals) > 100:
+        intervals = intervals[:100]
+    return map(lambda x:x[0], intervals)
+
