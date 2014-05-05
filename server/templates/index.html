@@ -67,6 +67,7 @@ $def with (name)
                                     <select id="algorithm-name" class="form-control">
                                         <option value="HMM">Hidden Markov Model</option>
                                         <option value="MA">Moving Average</option>
+                                        <option value="NAIVE">Naive</option>
                                     </select>
                                 </div>
 																<!-- Algorithm parameters begin-->
@@ -95,9 +96,17 @@ $def with (name)
 																		<div class="form-group">
 																			<label>Percentage</label>
 																			<input type="text" class="form-control" id="params-hmm-percentage" placeholder="0.2" />
+																	</div>
 																</div>
-													</div>
-													<!-- Parameters for HMM end-->
+																<!-- Parameters for HMM end-->
+																<!--Parametes for NAIVE begin-->
+																<div id="params-naive">
+																		<div class="form-group">
+																			<label>Deviation Factor</label>
+																			<input type="text" class="form-control" id="params-naive-deviation" placeholder="4" />
+																		</div>
+																</div>
+																<!--Parametes for NAIVE end-->
 													</div>
 													<!--Algorithm parameters end-->
 													<button type="button" id="algorithm-submit" class="btn btn-primary">Submit</button>
@@ -112,7 +121,25 @@ $def with (name)
                 <div class="col-md-8">
                     <div class="panel panel-default">
                         <div class="panel-heading">Annotation</div>
-                        <div class="panel-body" id="annotation-container">
+                        <div class="panel-body">
+													<ul class="list-unstyled list-inline" id="stats">
+														<li>
+															<h4>Min Y</h4>
+															<span id="stats-min">200</span>
+														</li>
+														<li>
+															<h4>Max Y</h4>
+															<span id="stats-max">200</span>
+														</li>
+														<li>
+															<h4>Range X</h4>
+															<span id="stats-range">200</span>
+														</li>
+														<li>
+															<h4>Mean</h4>
+															<span id="stats-mean">200</span>
+														</li>
+													</ul>
 												</div>
                     </div>
                 </div>
