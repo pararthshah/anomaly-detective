@@ -59,7 +59,7 @@ function updateStats(data) {
 
     $("#stats-min").html(miny.toFixed(2));
     $("#stats-max").html(maxy.toFixed(2));
-    $("#stats-range").html(miny.toFixed(2) + " - " + maxy.toFixed(2));
+    $("#stats-range").html((maxy - miny).toFixed(2));
     $("#stats-mean").html(mean.toFixed(2));
     $("#stats-variance").html(variance.toFixed(2));
 }
@@ -98,7 +98,8 @@ function addSelectOptions(elementSelector, data, addKey) {
  */
 MetricChart.prototype.addAnomalies = function(anomalies) {
     var idArray = []
-
+    console.log(anomalies);
+    
     $.each(anomalies, (function(index, tuple) {
         idArray.push(index)
 
@@ -162,8 +163,10 @@ MetricChart.prototype.removeAnomalies = function() {
  * Convert UNIX epoch to milliseconds by multiplying each x value with 1000.
  */
 function convertTSData(tsData) {
+    var minTime = 1395723600;
+
     for(var i=0; i<tsData.length;i++) {
-        tsData[i][0] *= 1000;
+        tsData[i][0] = (tsData[i][0] + minTime)*1000;
     }
     return tsData;
 }
@@ -301,7 +304,7 @@ $(document).ready(function() {
             var method = algorithmNameCache["MA"];
             params = $.extend(selectedMetric, { "window" : windowSize, "threshold" : threshold, "method" : method });
         } 
-        else if (selectedAlgorithm === algorithmNameCache["NAIVE"]) {
+        else if (selectedAlgorithm === algorithmNameCache["HMM"]) {
             var numOfStates = $("#params-hmm-states").val(); 
             var percentage = $("#params-hmm-percentage").val();
             var method = algorithmNameCache["HMM"];
@@ -310,7 +313,8 @@ $(document).ready(function() {
         else if (selectedAlgorithm === algorithmNameCache["NAIVE"]) {
             var deviationFactor = $("#params-naive-deviation").val();
             var method = algorithmNameCache["NAIVE"];
-            params = $.extend(selectedMetric, { "deviation_factor" : deviationFactor });    
+            console.log(deviationFactor);
+            params = $.extend(selectedMetric, { "deviation_factor" : deviationFactor, "method" : method });    
         }
         else {
             throw new Exception('Not Supported');    

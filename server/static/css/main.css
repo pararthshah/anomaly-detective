@@ -39,3 +39,15 @@
 	font-size:18px;
 	font-weight:bold;
 }
+
+#stats li {
+	margin-right:10px;
+	padding:5px 15px 10px 15px;
+	background-color:#428bca;
+	color:white;
+	font-size:14px;
+}
+
+#stats li>h4 {
+	font-size:16px;
+}
