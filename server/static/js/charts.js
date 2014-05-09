@@ -223,14 +223,19 @@ $(document).ready(function() {
                 },
         yAxis: {
             title: {
+                text: 'Value'
+            }
+        },
+        xAxis: {
+            title: {
                 text: 'Timestamp'
             }
         },
-            title: {
-                text: 'Timeseries'
+        title: {
+                text: 'Metric'
         },
         subtitle: {
-            text: 'Built chart in ...' // dummy text to reserve space for dynamic subtitle
+            text: '' // dummy text to reserve space for dynamic subtitle
         },
         series: [{
                     name: 'Metric',
@@ -321,9 +326,9 @@ $(document).ready(function() {
              data: params,
              dataType: "json",
              success: function(response) {
+                 console.log(response);
                  // Update 
                  var data = convertAnomalyData(response);
-                 console.log(data);
                  metricChart.removeAnomalies();
                  metricChart.addAnomalies(data);
                  $("#algorithm-preloader").hide();
