@@ -26,11 +26,16 @@ def detect_SMA(path, window, threshold):
     values = np.array(map(lambda x:x[1],series))
     s_ma = moving_avg(values,window)
     anomalies = []
+    times = list()
+    values= list()
     for i in range(window+1,len(series)-window):
         dist = abs(float(s_ma[i]-series[i][1]))
         #if dist >= values.ptp()*threshold:
         anomalies.append((i, series[i][0], dist))
-    filtered_anomalies = naive.get_anomalies_from_series(map(lambda x:x[1:],anomalies),3)
+        times.append(series[i][0])
+        values.append(dist)
+    filtered_anomalies = naive.get_anomalies_from_series(times, values, 3)
+    #filtered_anomalies = naive.get_anomalies_from_series(map(lambda x:x[1:],anomalies),3)
     return filtered_anomalies
     # if len(anomalies) <= 1:
     #     return map(lambda x:[x[1],x[1]], anomalies)

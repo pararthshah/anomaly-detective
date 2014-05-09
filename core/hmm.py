@@ -3,10 +3,11 @@ import sys
 import numpy, scipy
 import math
 from math import log
-from cluster import cluster
-from cluster import find_cluster
-from scripts.read_timeseries import read_timeseries
+from core.cluster import cluster
+from core.cluster import find_cluster
+from scripts.read_timeseries import read_timeseries, read_lists
 from scripts.ts_functions import bucketize
+from core.naive import index_to_interval
 
 def emission_prob(value, cluster_mean, cluster_var):
     # find log(P(value | state))
@@ -144,33 +145,28 @@ def get_likelihoods(series, n_states):
         likelihoods.append(curr_prob)
     return likelihoods
 
-
-def get_anomalies(path, n_states, ratio):
-    series= read_timeseries(path)
-    print "length of series= ", series[-1][0]
-    factor= 15
-    new_series= bucketize(series, len(series)/factor)
-    likelihoods= get_likelihoods(new_series, n_states)
-
-    # now find the mean and standard deviation of the likelihoods and assume that they are gaussian to find lowest percent of likelihoods
-    ll_sorted= sorted(enumerate(likelihoods), key= lambda x: x[1])
-    ll_index= map(lambda x:x[0], ll_sorted)
+def likelihoods_to_anomalies(times, values, ratio, factor= 1):     # returns anomaly intervals 
+    ll_index= sorted(range(len(values)), key= lambda x: values[x])
     ll_index= sorted(ll_index[:int(len(ll_index) * ratio)])
+    ll_index= map(lambda x: x*factor, ll_index)
+    return index_to_interval(ll_index, times)
 
-    anomalies= list()
-    index= 0 
-    while index < len(ll_index):
-        start_time= series[ll_index[index]*factor][0]
-        while index < len(ll_index)-1 and ll_index[index + 1] == ll_index[index] + 1:
-            index+= 1
-        end_time= series[ll_index[index]*factor + 1][0]
-        anomalies.append((start_time, end_time))
-        index+= 1
-    return anomalies
+def get_anomalies(path, n_states, ratio):       # interface for server/code.py
+    times, values= read_lists(path)
+    factor= 15
+    new_series= bucketize(times, values, len(values)/factor)
+    likelihoods= get_likelihoods(new_series, n_states)
+    return likelihoods_to_anomalies(times, likelihoods, ratio, factor)
 
+
+def get_anomalies_from_series(times, values, n_states, ratio):
+    factor= 100
+    new_values= bucketize(times, values, len(values)/factor)
+    likelihoods= get_likelihoods(new_values, n_states) 
+    return likelihoods_to_anomalies(times, likelihoods, ratio, factor)
+    
 
 if __name__=='__main__':
-    
     path= os.path.join(os.getcwd(), sys.argv[1])
     n_clusters= int(sys.argv[2])
     anomalies= get_anomalies(path, n_clusters, 0.1)
@@ -178,69 +174,3 @@ if __name__=='__main__':
     print len(anomalies)
 
 
-'''
-if __name__=="__main__":
-    # argument 1- directory containing timeseries data
-    # argument 2- directory that should contain logprob data
-    # argument 3- number of clusters
-    n_clusters= int(sys.argv[3])
-    path= os.path.join(os.getcwd(), sys.argv[1])
-    outdir= os.path.join(os.getcwd(), sys.argv[2])
-#   if os.path.exists(outdir):
-#       shutil.rmtree(outdir)
-    
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    n_q= 3  # find probability of 3 consequitive observations given the rest of the data
-    file_no= 0
-    for (name, series) in read_folder(path):
-        print file_no, len(series)
-        file_no+= 1
-        outpath= os.path.join(outdir, name)
-        if os.path.isfile(outpath):
-            print "file found!"
-            continue
-        queue= list()
-        curr_prob= 0
-        n_init= min(500, int(len(series)*0.3))
-        fout= open(outpath, 'w')
-        
-        A, n_pts, sum_val, sum_sqr= hmm_init(map(lambda x:x[1], series[0:n_init]), n_clusters)
-        temp_n_clusters= len(n_pts)
-
-        #print A, n_pts, sum_val, sum_sqr
-        for i in range(0, n_init):
-            fout.write("%f\t%f\n"% (series[i][0], curr_prob))
-
-        state_prob= [log(float(1)/temp_n_clusters)]*temp_n_clusters
-
-        for time, value in series[n_init:]:
-            state_prob, A, n_pts, sum_val, sum_sqr, obs_prob= hmm_add(value, A, n_pts, sum_val, sum_sqr, state_prob)
-            if obs_prob < -1e250:
-                # normalize state_prob
-                print "before: ", obs_prob, state_prob
-                for state in range(0, temp_n_clusters):
-                    state_prob[state]-= obs_prob
-                print "after: ", state_prob
-            queue.insert(0, obs_prob)
-            if len(queue) > n_q:
-                curr_prob= obs_prob - queue.pop()
-#           print curr_prob
-            fout.write("%f\t%f\n"% (time, curr_prob))
-        fout.close()
-''' 
-
-'''
-if __name__=="__main__":
-    a= [1.0, 1.1, 1.2, 1.3, 6.0, 6.1, 6.2, 6.3] 
-    A, n_pts, sum_val, sum_sqr= hmm_init(a, 2)
-#   print A, n_pts, sum_val, sum_sqr    
-    state_prob= [0.5, 0.5]
-
-    b= [1.3, 6.0, 1.4, 6.1, 1.2, 6.2, 1.1]
-
-    for value in b:
-        state_prob, A, n_pts, sum_val, sum_sqr= hmm_add(value, A, n_pts, sum_val, sum_sqr, state_prob)
-        prob_obs= logsumexp(state_prob)
-        print map(lambda x: x- prob_obs, state_prob)
-'''
