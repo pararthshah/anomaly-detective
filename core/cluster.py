@@ -89,7 +89,7 @@ def find_cluster(clusters, index):  # returns index in clusters which contains "
     return -1
     
     
-if __name__=='__main__':
+if __name__=='__main__':            #DEPRECATED: due to bucketize
     # read all timeseries in path 
     path= os.path.join(os.getcwd(), sys.argv[1])
     plotsdir = os.path.join(os.getcwd(), sys.argv[2])

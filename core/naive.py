@@ -3,6 +3,7 @@ import os, sys
 sys.path.insert(0, "../")
 from scripts.read_timeseries import read_timeseries, read_lists
 from scripts.ts_functions import bucketize
+#from scripts.features import create_window_features
 from scipy.stats import norm
 
 def find_outliers(values, mul_dev=3): 
@@ -31,18 +32,16 @@ def index_to_interval(indices, times):     # converts a list of flagged indices 
         i+= 1
     return anomalies
 
-def get_anomalies(path, mul_dev):
+def get_anomalies(path, mul_dev, feature_func= None, window_size= 15):  # DEPRECATED
     # interface for server/code.py
     times, values= read_lists(path)
-    factor= 15
-    new_series= bucketize(times, values, len(values)/factor)
-    outliers= find_outliers(new_series, mul_dev)
-    outliers= map(lambda x: x*factor, outliers)
+    featurelist= create_window_features(values, window_size, feature_func)  # add slope functionality
+    outliers= find_outliers(featurelist, mul_dev)
     return index_to_interval(outliers, times)
 
 
-def get_anomalies_from_series(times, values,  mul_dev):
-    # accepts a series instead of a path. Also does not bucketize list. Interface for scripts/ma.py
+def get_anomalies_from_series(times, values,  mul_dev):     # does not support bucketizing.
+    # accepts a series instead of a path. Also does not bucketize list. Interface for scripts/ma.py and gateway.py
     if len(times) != len(values):
         raise Exception("times and values have different lengths: get_anomalies_from_series")
     outliers= find_outliers(values, mul_dev)

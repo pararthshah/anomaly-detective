@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 
 # Swap files and random files
-*.swp
+*.sw[po]
 *.Rhistory
 
 

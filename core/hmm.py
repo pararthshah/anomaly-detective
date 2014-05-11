@@ -8,6 +8,7 @@ from core.cluster import find_cluster
 from scripts.read_timeseries import read_timeseries, read_lists
 from scripts.ts_functions import bucketize
 from core.naive import index_to_interval
+#from scripts.features import create_window_features
 
 def emission_prob(value, cluster_mean, cluster_var):
     # find log(P(value | state))
@@ -117,7 +118,7 @@ def hmm_add(value, A, n_pts, sum_val, sum_sqr, prev_state_prob):
     return curr_state_probs, A, n_pts, sum_val, sum_sqr, normalizer
 
 
-def get_likelihoods(series, n_states):
+def get_likelihoods(series, n_states):      # series is a list of just values- misnomer
     n_iter= 10  # iterations for initial kmeans
     n_q= 3      # number of states for which likelihood to be calculated
     # construct initial estimates from complete timeseries
@@ -145,27 +146,27 @@ def get_likelihoods(series, n_states):
         likelihoods.append(curr_prob)
     return likelihoods
 
-def likelihoods_to_anomalies(times, values, ratio, factor= 1):     # returns anomaly intervals 
-    ll_index= sorted(range(len(values)), key= lambda x: values[x])
-    ll_index= sorted(ll_index[:int(len(ll_index) * ratio)])
-    ll_index= map(lambda x: x*factor, ll_index)
-    return index_to_interval(ll_index, times)
+def likelihoods_to_anomalies(times, values, ratio):     # returns anomaly intervals
+    # does not support bucketized values
+    indices= sorted(range(len(values)), key= lambda x: values[x])
+    indices= sorted(indices[:int(len(indices) * ratio)])
+    return index_to_interval(indices, times)
 
-def get_anomalies(path, n_states, ratio):       # interface for server/code.py
+def get_anomalies(path, n_states, ratio, feature_func= None, window_size= 15):       # DEPRECATED
     times, values= read_lists(path)
+    #featurelist= create_window_features(values, window_size, feature_func)  # add slope functionality
     factor= 15
     new_series= bucketize(times, values, len(values)/factor)
     likelihoods= get_likelihoods(new_series, n_states)
+    #likelihoods= get_likelihoods(featurelist, n_states)
     return likelihoods_to_anomalies(times, likelihoods, ratio, factor)
 
-
-def get_anomalies_from_series(times, values, n_states, ratio):
-    factor= 100
+def get_anomalies_from_series(times, values, n_states, ratio):  # DEPRECATED
+    factor= 50
     new_values= bucketize(times, values, len(values)/factor)
     likelihoods= get_likelihoods(new_values, n_states) 
     return likelihoods_to_anomalies(times, likelihoods, ratio, factor)
     
-
 if __name__=='__main__':
     path= os.path.join(os.getcwd(), sys.argv[1])
     n_clusters= int(sys.argv[2])

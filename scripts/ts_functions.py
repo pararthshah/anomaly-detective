@@ -32,13 +32,12 @@ def fit_ts(ts, timevalues): # fits the timeseries into the given time values, re
 def find_common_timeinterval(slist):    # returns a time interval common to all ts in slist
     mintime= max([series[0][0] for series in slist])
     maxtime= min([series[-1][0] for series in slist])
-
     return (mintime, maxtime)
 
 
-def bucketize(times, values, n_buckets):        # trims one or a list of timeseries so that all contain common times and then bucketizes them
+def combine(times, values, n_buckets):        # trims one or a list of timeseries so that all contain common times and then bucketizes them
     slist= zip(times, values)   # TODO: optimize this 
-    
+
     if type(slist[0]) is list:
         (mintime, maxtime)= find_common_timeinterval(slist)
     else:
@@ -51,24 +50,71 @@ def bucketize(times, values, n_buckets):        # trims one or a list of timeser
         bucketlist= [fit_ts(series, timevalues) for series in slist]
     else:
         bucketlist= fit_ts(slist, timevalues)
-
     return bucketlist
 
+def bucketize(times, values, bucket_size):
+    mintime= times[0]
+    maxtime= times[1]
+    blist= list()
+    for start, end in bucket_iter(len(values), bucket_size):
+        bucket= values[start:end]
+        blist.append(sum(bucket)/len(bucket))
+    return blist
+
+def de_bucketize(times, values, bucket_size):
+    # de bucketizes values to match length of times
+    counter= 0
+    new_list= list()
+    for start, end in bucket_iter(len(times), bucket_size): 
+        new_list.extend([values[counter] for x in range(start, end)])
+        counter+=1
+    if len(new_list) != len(times):
+        print len(new_list), len(times)
+        raise Exception("Error in de_bucketize")
+    else:
+        return new_list
+
+
+def bucket_start(bucket_number, bucket_size):   # inclusive
+    return bucket_number * (2*bucket_size + 1)
+
+def bucket_end(bucket_number, bucket_size):     # exclusive!
+    return (bucket_number + 1)*(2*bucket_size+1)
+
+def bucket_mid(bucket_number, bucket_size):
+    return bucket_start(bucket_number, bucket_size) + bucket_size
 
 class window_iter():    # iterates over windows of value list
     def __init__(self, values, window_size):
         self.values= values
         self.window_size= window_size
-        self.counter= 0     # counter holds the index of start of window
+        self.counter= -1     # counter holds the index of start of window
 
     def __iter__(self):
         return self
 
     def next(self):
         self.counter+= 1
-        if self.counter + self.window_size >= len(self.values):
+        if self.counter + self.window_size > len(self.values):
             raise StopIteration
         else:
             return self.values[self.counter:self.counter + self.window_size] 
     
-     
+class bucket_iter():
+    # iterator which returns (start, end) indices for buckets over list of length n
+    def __init__(self, n, bucket_size):    # actual bucket_size is 2*()+1
+        self.n= n
+        self.bucket_size= bucket_size
+        self.counter= -1
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        self.counter+= 1
+        if bucket_start(self.counter, self.bucket_size) >= self.n:
+            raise StopIteration
+        else: 
+            return bucket_start(self.counter, self.bucket_size), min(bucket_end(self.counter, self.bucket_size), self.n)
+            #return values[bucket_start(self.counter, self.bucket_size):bucket_end(self.counter, self.bucket_size)]
+            
