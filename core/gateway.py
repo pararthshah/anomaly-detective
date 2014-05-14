@@ -19,6 +19,9 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
     elif feature== "slope":
         flist= features.f_slope(times, values)      #TODO: bucketize/ smoothen? update: smoothening doesn't work
         times= times[:-1]
+    elif feature== "deviance":
+        flist= features.create_window_features(values, features.f_deviance, window_size)
+        times= times[window_size:len(times)-window_size]
     elif feature== None:
         flist= values
     else:
@@ -33,6 +36,19 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
 
     elif algorithm== "naive":
         return naive.get_anomalies_from_series(times, flist, mul_dev)
+
+    elif algorithm=="combined_hmm":
+        bucket_size= 15
+        times= times[window_size:len(times)-window_size]
+        flist= bucketize(times, features.create_window_features(values, features.f_mean, window_size), bucket_size)
+        mean_likelihoods= hmm.get_likelihoods(flist, n_states)
+        flist= bucketize(times, features.create_window_features(values, features.f_var, window_size), bucket_size)
+        var_likelihoods= hmm.get_likelihoods(flist, n_states)
+        values= bucketize(times, values[window_size:len(values)- window_size], bucket_size)
+        value_likelihoods= hmm.get_likelihoods(values, n_states)
+        likelihoods= [mean_likelihoods[i] + var_likelihoods[i] + value_likelihoods[i] for i in range(0, len(values))]
+        likelihoods= de_bucketize(times, likelihoods, bucket_size)
+        return hmm.likelihoods_to_anomalies(times, likelihoods, float(percent)/100)
     else:
         raise Exception("Unknown algorithm attribute in gateway.py")
     

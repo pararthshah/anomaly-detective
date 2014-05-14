@@ -27,7 +27,7 @@ def index_to_interval(indices, times):     # converts a list of flagged indices 
         start_time= times[indices[i]]
         while i < len(indices)-1 and indices[i + 1] == indices[i] + 1:
             i+= 1
-        end_time= times[indices[i] + 1]
+        end_time= times[min(len(times)-1, indices[i] + 1)]
         anomalies.append((start_time, end_time))
         i+= 1
     return anomalies

@@ -9,6 +9,8 @@ sys.path.insert(0, config.BASE_DIR)
 
 from core import hmm_interface
 from core.gateway import get_anomalies
+from scripts.ma import detect_SMA
+from core.match import dummy
 
 urls = (
     '/', 'Index',
@@ -53,19 +55,17 @@ class Anomalies:
         path = os.path.join(config.TS_DIR, filename)
         try:
             if params.method=='MA':
-                anomalies= get_anomalies(path, "naive", "mean")
+                anomalies= get_anomalies(path, "naive", "deviance")
                 #anomalies = detect_SMA(path, int(params.window), float(params.threshold))
                 return json.dumps(anomalies)
             elif params.method=='HMMX':
                 anomalies= hmm_interface.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
                 return json.dumps(anomalies)
             elif params.method=='HMM':
-                anomalies= get_anomalies(path, "hmm", "mean")
-                #anomalies= features.get_anomalies(path, 3)
-                #anomalies= hmm.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
+                anomalies= get_anomalies(path, "hmm", None, percent= float(params.percentage))
                 return json.dumps(anomalies)
             elif params.method== 'NAIVE':
-                anomalies= naive.get_anomalies(path, float(params.deviation_factor))
+                anomalies= get_anomalies(path, "naive", "var", window_size= 30)
                 return json.dumps(anomalies)
         except Exception, e:
             print "Exception:"

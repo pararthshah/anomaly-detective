@@ -18,6 +18,8 @@ def f_mean(window):
 def f_var(window):
     return numpy.var(numpy.array(window))
 
+def f_deviance(window):
+    return window[len(window)/2] - f_mean(window)
 
 def f_slope(times, values):        # given a series (time value pairs), returns the slope of points over the series
     slope= list()
