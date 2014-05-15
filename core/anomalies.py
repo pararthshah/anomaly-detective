@@ -1,5 +1,3 @@
-from naive import index_to_interval
-
 def aggregate(anomaly_list, ratio= 0.0005):   # accepts list of anomalies
     # TODO: try exponential taper off, instead of discrete one
     max_time= 0
@@ -14,14 +12,29 @@ def aggregate(anomaly_list, ratio= 0.0005):   # accepts list of anomalies
             for i in range(int(start), int(end)):
                 weights[i]+= 1
     # now find most significant weights
-    anomaly_indices= find_highest(weights, ratio)
-    anomalies= index_to_interval(anomaly_indices, range(0, int(max_time)))
-    return anomalies
+    return max_anomalies(range(0, len(weights)), weights, ratio), weights
 
-def find_highest(weights, ratio):
-    indices= sorted(range(len(weights)), key= lambda x: weights[x], reverse=True)
+def max_anomalies(times, values, ratio):   # finds highest weights and returns them as anomalies- similar to likelihoods_to_anomalies in hmm.py
+    indices= sorted(range(len(values)), key= lambda x: values[x], reverse=True)
     indices= sorted(indices[:int(len(indices) * ratio)])
-    return indices
+    return index_to_interval(indices, times)
+
+def min_anomalies(times, values, ratio):   # finds highest weights and returns them as anomalies- similar to likelihoods_to_anomalies in hmm.py
+    indices= sorted(range(len(values)), key= lambda x: values[x])
+    indices= sorted(indices[:int(len(indices) * ratio)])
+    return index_to_interval(indices, times)
+
+def index_to_interval(indices, times):     # converts a list of flagged indices to anomaly intervals
+    anomalies= list()
+    i= 0
+    while i < len(indices):
+        start_time= times[indices[i]]
+        while i < len(indices)-1 and indices[i + 1] == indices[i] + 1:
+            i+= 1
+        end_time= times[min(len(times)-1, indices[i] + 1)]
+        anomalies.append((start_time, end_time))
+        i+= 1
+    return anomalies
 
 def distance(a1, a2):   # finds the "edit distance" between two anomalies- jaccard distance
     if len(a1)== 0 or len(a2)== 0:

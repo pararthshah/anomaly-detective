@@ -5,12 +5,14 @@ import os, sys, time
 import json
 import config
 
+#DATAPATH= "../data/dataset1"    
 sys.path.insert(0, config.BASE_DIR)
+#paths= config.paths()
+#sys.path.insert(0, paths.BASE_DIR)
 
 from core import hmm_interface
 from core.gateway import get_anomalies
 from scripts.ma import detect_SMA
-from core.match import dummy
 
 urls = (
     '/', 'Index',
@@ -19,7 +21,6 @@ urls = (
     '/anomalies', 'Anomalies',
     '/annotations', 'Annotations'
 )
-
 render = web.template.render('templates')
 
 #r_gateway = RGateway()
@@ -63,6 +64,7 @@ class Anomalies:
                 return json.dumps(anomalies)
             elif params.method=='HMM':
                 anomalies= get_anomalies(path, "hmm", None, percent= float(params.percentage))
+                #anomalies= get_anomalies(path, "mv", None, percent= float(params.percentage))
                 return json.dumps(anomalies)
             elif params.method== 'NAIVE':
                 anomalies= get_anomalies(path, "naive", "var", window_size= 30)
@@ -83,5 +85,6 @@ class Annotations:
         return "Annotations!"
 
 if __name__ == "__main__": 
+    #config.set_datadir(DATAPATH)    # remove to keep data path as ../data
     app = web.application(urls, globals())
     app.run()

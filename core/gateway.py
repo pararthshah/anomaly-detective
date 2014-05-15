@@ -3,8 +3,10 @@ import os, sys
 import core.hmm as hmm
 import core.naive as naive
 import scripts.features as features
+import core.anomalies as anomalies
 from scripts.read_timeseries import read_lists
 from scripts.ts_functions import bucketize, de_bucketize
+from anomalies import max_anomalies
 
 def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_states= 10, percent=2):
     # mul_dev to be used for naive, percent for hmm. TODO: Use common metric for both.
@@ -32,7 +34,8 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
         flist= bucketize(times, flist, bucket_size)
         likelihoods= hmm.get_likelihoods(flist, n_states) 
         likelihoods= de_bucketize(times, likelihoods, bucket_size)
-        return hmm.likelihoods_to_anomalies(times, likelihoods, float(percent)/100)    
+        #return hmm.likelihoods_to_anomalies(times, likelihoods, float(percent)/100)    
+        return anomalies.min_anomalies(times, likelihoods, float(percent)/100)
 
     elif algorithm== "naive":
         return naive.get_anomalies_from_series(times, flist, mul_dev)
@@ -49,9 +52,22 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
         likelihoods= [mean_likelihoods[i] + var_likelihoods[i] + value_likelihoods[i] for i in range(0, len(values))]
         likelihoods= de_bucketize(times, likelihoods, bucket_size)
         return hmm.likelihoods_to_anomalies(times, likelihoods, float(percent)/100)
+    elif algorithm=="mv":
+        return majority_vote(path, float(percent)/100) 
     else:
         raise Exception("Unknown algorithm attribute in gateway.py")
     
+# TODO: move to match.py after resolving cyclic dependencies
+def majority_vote(path, ratio):    # reads file containing machine weights and returns anomalies
+    # TODO: hacky way, improve
+    ts_name= os.path.basename(path)
+    dir_name= os.path.dirname(path)
+    machine_name= ts_name.split("-")[0]
+    weights_path= os.path.join(dir_name, "..", "machine_weights", machine_name)
+    weights= [int(line.strip()) for line in open(weights_path, 'r')]
+    anomalies= max_anomalies(range(0, len(weights)), weights, ratio)
+    return anomalies
+
 if __name__=="__main__":
     path= os.path.join(os.getcwd(), sys.argv[1])
     print get_anomalies(path, "hmm")

@@ -7,7 +7,7 @@ from core.cluster import cluster
 from core.cluster import find_cluster
 from scripts.read_timeseries import read_timeseries, read_lists
 from scripts.ts_functions import bucketize
-from core.naive import index_to_interval
+from core.anomalies import min_anomalies
 #from scripts.features import create_window_features
 
 def emission_prob(value, cluster_mean, cluster_var):
@@ -146,7 +146,7 @@ def get_likelihoods(series, n_states):      # series is a list of just values- m
         likelihoods.append(curr_prob)
     return likelihoods
 
-def likelihoods_to_anomalies(times, values, ratio):     # returns anomaly intervals
+def likelihoods_to_anomalies(times, values, ratio):             # DEPRECATED
     # does not support bucketized values
     indices= sorted(range(len(values)), key= lambda x: values[x])
     indices= sorted(indices[:int(len(indices) * ratio)])

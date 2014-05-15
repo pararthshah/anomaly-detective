@@ -1,12 +1,22 @@
 import os, sys, json, pprint
 from gateway import get_anomalies
-from anomalies import aggregate, distance
-from naive import index_to_interval
+from anomalies import aggregate, distance, max_anomalies
+from server import config
 
 algorithms= ["naive"]
 #algorithms= ["naive", "hmm"]
 features= [None, "mean", "var", "deviance"] # add slope?
 window_sizes= [15, 30]
+
+def get_anomalies(path, ratio):    # reads file containing machine weights and returns anomalies
+    # hacky way, improve
+    ts_name= os.path.basename(path)
+    machine_name= ts_name.split("-")[0]
+    weights_path= os.path.join(path, "..", "machine_weights", machine_name)
+    weights= list()
+    with open(weights_path) as f:
+        weights.append(int(f.readline()))
+    return max_anomalies(range(0, len(weights)), weights, ratio)
 
 class algo_iter:
     def __init__(self):    
@@ -81,22 +91,22 @@ def optimize_machine(paths):    # optimizes over all the timeseries provided in 
             except KeyError:
                 anomaly_dict[path][algo][feature]= dict()
                 
-            anomaly_list.append(get_anomalies(path, algo, feature, percent=2, mul_dev= 2.5, window_size= w_size))
+            anomaly_list.append(get_anomalies(path, algo, feature, percent=2, mul_dev= 3, window_size= w_size))
             print len(anomaly_list[-1])
             anomaly_dict[path][algo][feature][w_size]= anomaly_list[-1]
 
-    final_anomalies= aggregate(anomaly_list)
+    final_anomalies, weights= aggregate(anomaly_list, ratio= 0.01)
     min_algo= list()
     anomalies= list()
     for path in paths:
         min_algo.append(find_optimal_algo(anomaly_dict[path], final_anomalies))
         a= min_algo[-1]
         anomalies.append(anomaly_dict[path][a[0]][a[1]][a[2]])
-    return min_algo, anomalies, final_anomalies
+    return min_algo, anomalies, final_anomalies, weights
         
 
 if __name__=="__main__":
-    #path= os.path.join(os.getcwd(), sys.argv[1])
+    sys.path.insert(0, "..")
     machine_name= sys.argv[1]
     imp_file= open("../data/important.json", 'r')
     names= json.load(imp_file)
@@ -104,16 +114,22 @@ if __name__=="__main__":
     # create list of paths to all timeseries for machine_name
     paths= list()
     for ts in names[machine_name]:
-        path= os.path.join(os.getcwd(), sys.argv[2], str(machine_name) + "-" + str(ts) + ".data")
+        path= os.path.join(os.getcwd(), config.TS_DIR, str(machine_name) + "-" + str(ts) + ".data")
         paths.append(path)
-    pprint.pprint(paths)
-    min_algo, anomalies, final_anomalies= optimize_machine(paths)
-    pprint.pprint(min_algo)
+
+    min_algo, anomalies, final_anomalies, weights= optimize_machine(paths)
+    for i, path in enumerate(paths):
+        pprint.pprint(path)
+        pprint.pprint(min_algo[i])
     #pprint.pprint(anomalies)
     pprint.pprint(final_anomalies)
+    # write machine weights in a file
+    if not os.path.exists(config.MACHINE_WTS_DIR):
+        os.mkdir(config.MACHINE_WTS_DIR)
 
-def dummy():    # final_anomalies for the first machine
-    anomalies= [(31085, 31090), (44405, 44410), (44425, 44430), (44435, 44444), (44445, 44645), (44670, 44676), (68308, 68310), (85020, 85025), (85095, 85105), (85115, 85130), (85135, 85155), (327225, 327230), (550340, 550350), (550365, 550375)]
-    return anomalies
+    fout= open(os.path.join(config.MACHINE_WTS_DIR, machine_name), 'w')
+    for weight in weights:
+        fout.write("%d\n" % weight)
+    fout.close()
 
-    
+
