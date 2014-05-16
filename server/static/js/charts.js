@@ -248,6 +248,7 @@ $(document).ready(function() {
 
     $("#btn-get-metric").click(function() { 
         var selectedMetric = getSelectedMetric();
+        var dataset = $('#dataset').val();
         console.log(selectedMetric);
         // show preloader
         $("#load-preloader").show("slow");
@@ -258,7 +259,7 @@ $(document).ready(function() {
         $.ajax({
             url: "/data", 
             dataType: 'json',
-            data: selectedMetric,
+            data: $.extend({ 'dataset' : dataset }, selectedMetric),
             success: function(response) {
                 // Update the stats on the page (before converting to milliseconds.)
                 updateStats(response);
