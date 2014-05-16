@@ -63,8 +63,8 @@ class Anomalies:
                 anomalies= hmm_interface.get_anomalies(path, int(params.n_states), float(params.percentage)/100)
                 return json.dumps(anomalies)
             elif params.method=='HMM':
-                anomalies= get_anomalies(path, "hmm", None, percent= float(params.percentage))
-                #anomalies= get_anomalies(path, "mv", None, percent= float(params.percentage))
+                #anomalies= get_anomalies(path, "hmm", None, percent= float(params.percentage))
+                anomalies= get_anomalies(path, "tmv", None, percent= float(params.percentage))
                 return json.dumps(anomalies)
             elif params.method== 'NAIVE':
                 anomalies= get_anomalies(path, "naive", "var", window_size= 30)

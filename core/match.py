@@ -1,22 +1,13 @@
 import os, sys, json, pprint
-from gateway import get_anomalies
+import gateway 
 from anomalies import aggregate, distance, max_anomalies
 from server import config
 
-algorithms= ["naive"]
-#algorithms= ["naive", "hmm"]
+#algorithms= ["naive"]
+algorithms= ["naive", "hmm"]
 features= [None, "mean", "var", "deviance"] # add slope?
 window_sizes= [15, 30]
 
-def get_anomalies(path, ratio):    # reads file containing machine weights and returns anomalies
-    # hacky way, improve
-    ts_name= os.path.basename(path)
-    machine_name= ts_name.split("-")[0]
-    weights_path= os.path.join(path, "..", "machine_weights", machine_name)
-    weights= list()
-    with open(weights_path) as f:
-        weights.append(int(f.readline()))
-    return max_anomalies(range(0, len(weights)), weights, ratio)
 
 class algo_iter:
     def __init__(self):    
@@ -33,6 +24,26 @@ class algo_iter:
         else:
             raise StopIteration
 
+def machine_majority_vote(path, ratio):    # reads file containing machine weights and returns anomalies
+    # TODO: hacky way, improve
+    ts_name= os.path.basename(path)
+    dir_name= os.path.dirname(path)
+    machine_name= ts_name.split("-")[0]
+    weights_path= os.path.join(dir_name, "..", "machine_weights", machine_name)
+    weights= [int(line.strip()) for line in open(weights_path, 'r')]
+    anomalies= max_anomalies(range(0, len(weights)), weights, ratio)
+    return anomalies
+
+def ts_majority_vote(path, ratio= 0.005):
+    anomaly_list= list()
+    for algo, feature, w_size in algo_iter():
+        anomaly_list.append(gateway.get_anomalies(path, algo, feature, window_size= w_size, percent= 3, mul_dev= 2.5))
+    print anomaly_list
+    final_anomalies, weights= aggregate(anomaly_list, ratio)
+    print final_anomalies
+    return final_anomalies 
+
+
 def optimize_timeseries(path):
     anomaly_dict= dict()
     anomaly_list= list()
@@ -48,7 +59,7 @@ def optimize_timeseries(path):
         except KeyError:
             anomaly_dict[algo][feature]= dict()
             
-        anomaly_list.append(get_anomalies(path, algo, feature, percent=0.5, mul_dev= 3, window_size= w_size))
+        anomaly_list.append(gateway.get_anomalies(path, algo, feature, percent=0.5, mul_dev= 3, window_size= w_size))
         anomaly_dict[algo][feature][w_size]= anomaly_list[-1]
 
     final_anomalies= aggregate(anomaly_list)
@@ -91,7 +102,7 @@ def optimize_machine(paths):    # optimizes over all the timeseries provided in 
             except KeyError:
                 anomaly_dict[path][algo][feature]= dict()
                 
-            anomaly_list.append(get_anomalies(path, algo, feature, percent=2, mul_dev= 3, window_size= w_size))
+            anomaly_list.append(gateway.get_anomalies(path, algo, feature, percent=2, mul_dev= 3, window_size= w_size))
             print len(anomaly_list[-1])
             anomaly_dict[path][algo][feature][w_size]= anomaly_list[-1]
 
