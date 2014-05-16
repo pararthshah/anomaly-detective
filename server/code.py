@@ -43,6 +43,8 @@ class Data:
     def GET(self):
         params = web.input()
         web.header('Content-Type', 'application/json')
+        dataset = int(params.dataset)
+        # Change root folder based on dataset (can be 1 or 4)
         filename = params.machine + "-" + params.metric + ".data"
         path = os.path.join(config.TS_JSON_DIR, filename)
         with open(path) as str_file:
