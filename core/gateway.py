@@ -38,6 +38,7 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
         flist= bucketize(times, flist, bucket_size)
         likelihoods= hmm.get_likelihoods(flist, n_states) 
         likelihoods= de_bucketize(times, likelihoods, bucket_size)
+        #print likelihoods
         #return hmm.likelihoods_to_anomalies(times, likelihoods, float(percent)/100)    
         return anomalies.min_anomalies(times, likelihoods, float(percent)/100)
 
@@ -83,5 +84,5 @@ class algo_iter:
 
 if __name__=="__main__":
     path= os.path.join(os.getcwd(), sys.argv[1])
-    print get_anomalies(path, "optimal")
+    print get_anomalies(path, "hmm")
 

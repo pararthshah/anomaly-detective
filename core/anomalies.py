@@ -38,7 +38,7 @@ def anomalies_to_expweights(anomaly_list, alpha= 500):
     return weights
         
 
-def anomaly_weight_overlap(anomalies, weights):
+def anomaly_weight_overlap(anomalies, weights, alpha= 0.7):
     if len(anomalies)==0:
         return 0            # how to avoid penalizing for ts without anomalies?
     overlap= 0
@@ -49,7 +49,11 @@ def anomaly_weight_overlap(anomalies, weights):
             break
     #return float(overlap)/len(anomalies)
     #return float(overlap)/total_time(anomalies)
-    return float(overlap)/(total_time(anomalies) * len(anomalies) * len(anomalies))  # penalize for number of anomalies?
+    #return float(overlap)/(len(anomalies)*len(anomalies))
+    #return float(overlap)/math.pow(len(anomalies), 1.5)
+    #return float(overlap)/(total_time(anomalies) * len(anomalies) * len(anomalies))  # penalize for number of anomalies?
+    return float(overlap)/math.exp(alpha * len(anomalies))
+
 
 def arrange_anomalies(anomalies, weights):  # arranges anomalies by amount of overlap (or should it be average overlap?)
     overlap= list()
