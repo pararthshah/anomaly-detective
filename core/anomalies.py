@@ -1,4 +1,6 @@
-def aggregate(anomaly_list, ratio= 0.0005):   # accepts list of anomalies
+import math
+
+def anomalies_to_weights(anomaly_list):
     # TODO: try exponential taper off, instead of discrete one
     max_time= 0
     for anomalies in anomaly_list:
@@ -11,10 +13,59 @@ def aggregate(anomaly_list, ratio= 0.0005):   # accepts list of anomalies
         for start, end in anomalies:
             for i in range(int(start), int(end)):
                 weights[i]+= 1
+    return weights
+
+def anomalies_to_expweights(anomaly_list, alpha= 500):
+    # do an efficient exponential taper off
+    cutoffs= [1, 0.7, 0.5, 0.2, 0.1]
+    # find cutoff_intervals
+    intervals= list()
+    for cutoff in cutoffs:
+        intervals.append(-int(math.log(cutoff) * alpha))
+    max_time= 0
+    for anomalies in anomaly_list:
+        if len(anomalies) > 0 and anomalies[-1][1] > max_time:
+            max_time= anomalies[-1][1]
+    max_time= int(max_time)
+    weights= [0]*max_time   # hope that times start from 0
+        
+    for anomalies in anomaly_list:
+        for start, end in anomalies:
+            for cutoff, interval in zip(cutoffs, intervals):
+                for i in range(max(0, int(start) - interval), min(max_time, int(end) + interval)):
+                    weights[i]+= cutoff
+
+    return weights
+        
+
+def anomaly_weight_overlap(anomalies, weights):
+    if len(anomalies)==0:
+        return 0            # how to avoid penalizing for ts without anomalies?
+    overlap= 0
+    for anomaly in anomalies:
+        if anomaly[0] < len(weights):
+            overlap+= sum(weights[max(int(anomaly[0]), len(weights)-1) : max(int(anomaly[1]), len(weights))])
+        else:
+            break
+    #return float(overlap)/len(anomalies)
+    #return float(overlap)/total_time(anomalies)
+    return float(overlap)/(total_time(anomalies) * len(anomalies) * len(anomalies))  # penalize for number of anomalies?
+
+def arrange_anomalies(anomalies, weights):  # arranges anomalies by amount of overlap (or should it be average overlap?)
+    overlap= list()
+    for anomaly in anomalies:
+        if anomaly[0] < len(weights):
+            overlap.append(sum(weights[max(int(anomaly[0]), len(weights)-1) : max(int(anomaly[1]), len(weights))]))
+        else:
+            overlap.append(0)
+    return [y for (x, y) in sorted(zip(overlap, anomalies))]
+            
+def aggregate(anomaly_list, ratio= 0.0005):   # accepts list of anomalies
+    weights= anomalies_to_weights(anomaly_list)
     # now find most significant weights
     return max_anomalies(range(0, len(weights)), weights, ratio), weights
 
-def max_anomalies(times, values, ratio):   # finds highest weights and returns them as anomalies- similar to likelihoods_to_anomalies in hmm.py
+def max_anomalies(times, values, ratio= 0.0005):   # finds highest weights and returns them as anomalies- similar to likelihoods_to_anomalies in hmm.py
     indices= sorted(range(len(values)), key= lambda x: values[x], reverse=True)
     indices= sorted(indices[:int(len(indices) * ratio)])
     return index_to_interval(indices, times)
@@ -50,7 +101,6 @@ def distance(a1, a2):   # finds the "edit distance" between two anomalies- jacca
             a2_counter+= 1
         else:
             a1_counter+= 1
-
     return float(union)/(total_time(a1)*total_time(a2))
     
 def overlap(int1, int2):    # finds time overlap between two intervals

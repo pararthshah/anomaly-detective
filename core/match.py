@@ -1,17 +1,21 @@
 import os, sys, json, pprint
+
+if __name__=='__main__':
+    sys.path.insert(0, "..")
+
 import gateway 
-from anomalies import aggregate, distance, max_anomalies
+from anomalies import aggregate, distance, max_anomalies, anomalies_to_weights, anomaly_weight_overlap, arrange_anomalies, anomalies_to_expweights
 from server import config
 
-#algorithms= ["naive"]
+#methods= ["naive"]
 algorithms= ["naive", "hmm"]
 features= [None, "mean", "var", "deviance"] # add slope?
 window_sizes= [15, 30]
 
 
 class algo_iter:
-    def __init__(self):    
-        self.algo_list= [(x, y, z) for z in window_sizes for y in features for x in algorithms]
+    def __init__(self, methods= ["naive", "hmm"], features=[None, "mean", "var", "deviance"], window_sizes= [15, 30]):    
+        self.algo_list= [(x, y, z) for z in window_sizes for y in features for x in methods]
         self.counter= -1
     
     def __iter__(self):
@@ -37,41 +41,40 @@ def machine_majority_vote(path, ratio):    # reads file containing machine weigh
 def ts_majority_vote(path, ratio= 0.005):
     anomaly_list= list()
     for algo, feature, w_size in algo_iter():
-        anomaly_list.append(gateway.get_anomalies(path, algo, feature, window_size= w_size, percent= 3, mul_dev= 2.5))
-    print anomaly_list
+        anomaly_list.append(gateway.get_anomalies(path, algo, feature, window_size= w_size, percent= 10, mul_dev= 1.5))
     final_anomalies, weights= aggregate(anomaly_list, ratio)
-    print final_anomalies
     return final_anomalies 
 
 
-def optimize_timeseries(path):
+def optimize_timeseries(path, mul_dev= 3, percent= 0.5, top= None):      # returns anomalies sorted by weights and not time
     anomaly_dict= dict()
     anomaly_list= list()
-    for algo, feature, w_size in algo_iter():
+    for algo in gateway.algo_iter():
         # TODO: replace with my_dict
-        try:
-            var= anomaly_dict[algo]
-        except KeyError:
-            anomaly_dict[algo]= dict()
+        anomaly_list.append(gateway.get_anomalies(path, algo[0], algo[1], percent= percent, mul_dev= mul_dev, window_size= algo[2]))
+        anomaly_dict[algo]= anomaly_list[-1]
 
-        try:
-            var= anomaly_dict[algo][feature]
-        except KeyError:
-            anomaly_dict[algo][feature]= dict()
-            
-        anomaly_list.append(gateway.get_anomalies(path, algo, feature, percent=0.5, mul_dev= 3, window_size= w_size))
-        anomaly_dict[algo][feature][w_size]= anomaly_list[-1]
+    #final_anomalies= aggregate(anomaly_list)
+    weights= anomalies_to_expweights(anomaly_list)
+    max_overlap= -1
+    for algo in gateway.algo_iter():
+        overlap= anomaly_weight_overlap(anomaly_dict[algo], weights)
+        #print algo, overlap
+        if max_overlap < overlap:
+            max_overlap= overlap
+            max_algo= algo
+    print "max algo= ", max_algo 
+    #arranged_anomalies= arrange_anomalies(anomaly_dict[max_algo], weights)
+    #print arranged_anomalies, len(arranged_anomalies)
+    #if top==None:
+    #    top= len(arranged_anomalies)
+    #return arranged_anomalies[:top], max_algo
+    return anomaly_dict[max_algo], max_algo
 
-    final_anomalies= aggregate(anomaly_list)
-    #return final_anomalies
-    min_dist= distance(final_anomalies, anomaly_dict[algorithms[0]][features[0]][window_sizes[0]])  # do using algo_iter.get_init()
-    print min_dist
-    min_algo= find_optimal_algo(anomaly_dict, final_anomalies)
-    return min_algo, anomaly_dict[min_algo[0]][min_algo[1]][min_algo[2]], final_anomalies
 
-
+'''
 def find_optimal_algo(anomaly_dict, final_anomalies):   # given the dict of anomalies, and the final list of anomalies, returns optimal algo, feature and window_size
-    min_algo= (algorithms[0], features[0], window_sizes[0])
+    min_algo= (methods[0], features[0], window_sizes[0])
     min_dist= distance(final_anomalies, anomaly_dict[min_algo[0]][min_algo[1]][min_algo[2]])
     for algo, feature, window_size in algo_iter():
         curr_dist= distance(final_anomalies, anomaly_dict[algo][feature][window_size])
@@ -80,6 +83,7 @@ def find_optimal_algo(anomaly_dict, final_anomalies):   # given the dict of anom
             min_dist= curr_dist
             min_algo= (algo, feature, window_size)
     return min_algo
+'''
 
 def optimize_machine(paths):    # optimizes over all the timeseries provided in the path list
     # returns a list of algorithms and a list of corresponding anomalies
@@ -115,7 +119,11 @@ def optimize_machine(paths):    # optimizes over all the timeseries provided in 
         anomalies.append(anomaly_dict[path][a[0]][a[1]][a[2]])
     return min_algo, anomalies, final_anomalies, weights
         
+if __name__=='__main__':
+    print len(optimize_timeseries(sys.argv[1])[0])
+    
 
+'''
 if __name__=="__main__":
     sys.path.insert(0, "..")
     machine_name= sys.argv[1]
@@ -143,4 +151,5 @@ if __name__=="__main__":
         fout.write("%d\n" % weight)
     fout.close()
 
+'''
 

@@ -1,56 +1,54 @@
-# functions useful for cluster.py
 
-def fit_ts(ts, timevalues): # fits the timeseries into the given time values, returns only list(values), NOT list((time, value))
-    new_series= list()
+def fit_ts(times, values, timevalues): # fits the timeseries into the given time values, returns only list(values), NOT list((time, value))
+    if len(times) != len(values):
+        print len(times), len(values)
+        raise Exception("Error in fit_ts")
+    new_values= list()
     ts_index= 0
 
     # start from time timevalues[0], ignore previous values
-    while ts[ts_index][0] < timevalues[0]:
+    while times[ts_index] < timevalues[0]:
         ts_index+= 1
 
     for index, time in enumerate(timevalues):
         n_values= 0
         sum_values= 0
-        if(index== len(timevalues)-1):      # if this is the last bucket, take average of all remaining values in timeseries
-            sum_values= sum(map(lambda x:x[1], ts[ts_index:-1]))
-            n_values= len(ts) - ts_index
-        else:                   # otherwise take average of values till start of next bucket
-            while ts[ts_index][0] < timevalues[index+1]:
+        if(index== len(timevalues)-1):          # if this is the last bucket, take average of all remaining values in timeseries
+            sum_values= sum(values[ts_index:-1])
+            n_values= len(values) - ts_index
+        else:                                   # otherwise take average of values till start of next bucket
+            while times[ts_index] < timevalues[index+1]:
                 n_values+= 1
-                sum_values+= ts[ts_index][1]
+                sum_values+= values[ts_index]
                 ts_index+= 1
         if (n_values > 0):
-            new_series.append(sum_values/n_values)
+            new_values.append(sum_values/n_values)
         elif(len(new_series)>0):
-            new_series.append(new_series[-1])   # append the last value
+            new_values.append(new_series[-1])   # append the last value
         else:
-            new_series.append( 0)           # if no prev. value available append 0
-    
-    return new_series
+            new_values.append( 0)               # if no prev. value available append 0
+    return new_values
             
 
-def find_common_timeinterval(slist):    # returns a time interval common to all ts in slist
-    mintime= max([series[0][0] for series in slist])
-    maxtime= min([series[-1][0] for series in slist])
+def find_common_timeinterval(timelists):    # returns a time interval common to all ts in slist
+    mintime= max([times[0] for times in timelists])
+    maxtime= min([times[-1] for times in timelists])
     return (mintime, maxtime)
 
 
-def combine(times, values, n_buckets):        # trims one or a list of timeseries so that all contain common times and then bucketizes them
-    slist= zip(times, values)   # TODO: optimize this 
+def combine(timelists, valuelists, n_buckets):        # trims one or a list of timeseries so that all contain common times and then bucketizes them
+    if len(timelists) != len(valuelists):
+        raise Exception("Non matching lengths in ts_functions.combine")
 
-    if type(slist[0]) is list:
-        (mintime, maxtime)= find_common_timeinterval(slist)
-    else:
-        mintime= slist[0][0]
-        maxtime= slist[-1][0]
+    (mintime, maxtime)= find_common_timeinterval(timelists)
 
     x= int((maxtime-mintime)/n_buckets)
     timevalues= range(int(mintime), int(maxtime), int((maxtime-mintime)/n_buckets))
-    if type(slist[0]) is list:
-        bucketlist= [fit_ts(series, timevalues) for series in slist]
+    if type(timelists[0]) is list:
+        bucketlist= [fit_ts(times, values, timevalues) for times, values in zip(timelists, valuelists)]
     else:
-        bucketlist= fit_ts(slist, timevalues)
-    return bucketlist
+        bucketlist= fit_ts(timelists, valuelists, timevalues)
+    return timevalues, bucketlist
 
 def bucketize(times, values, bucket_size):
     mintime= times[0]

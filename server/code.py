@@ -66,7 +66,8 @@ class Anomalies:
                 return json.dumps(anomalies)
             elif params.method=='HMM':
                 #anomalies= get_anomalies(path, "hmm", None, percent= float(params.percentage))
-                anomalies= get_anomalies(path, "tmv", None, percent= float(params.percentage))
+                #anomalies= get_anomalies(path, "mv", None, percent= float(params.percentage))
+                anomalies= get_anomalies(path, "optimal", None, percent= float(params.percentage))
                 return json.dumps(anomalies)
             elif params.method== 'NAIVE':
                 anomalies= get_anomalies(path, "naive", "var", window_size= 30)

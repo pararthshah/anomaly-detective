@@ -3,8 +3,7 @@ import sys
 import numpy, scipy
 import math
 from math import log
-from core.cluster import cluster
-from core.cluster import find_cluster
+import core.cluster as cluster
 from scripts.read_timeseries import read_timeseries, read_lists
 from scripts.ts_functions import bucketize
 from core.anomalies import min_anomalies
@@ -30,7 +29,7 @@ def logsumexp(array):
 
 def hmm_init(values, n_states, n_iter):     # for now just assign hard states. later run EM to assign soft states.
     # divide points into n_states clusters
-    clusters= cluster(values, n_states, n_iter)
+    clusters= cluster.cluster(values, n_states, n_iter)
     # remove zero clusters
     clusters= [c for c in clusters if len(c) > 0]
     n_states= len(clusters)
@@ -48,7 +47,7 @@ def hmm_init(values, n_states, n_iter):     # for now just assign hard states. l
     # compute state transition probabilities
     A= [[1]*n_states for i in range(0, n_states)]   # one added for laplace smoothing
     for i in range(0, len(values)-1):
-        A[find_cluster(clusters, i)][find_cluster(clusters, i+1)]+= 1
+        A[cluster.find_cluster(clusters, i)][cluster.find_cluster(clusters, i+1)]+= 1
     return A, n_pts, sum_val, sum_sqr
 
 

@@ -16,7 +16,6 @@ class read_ts_iter:
         strvalues= self.fobj.next().split()
         return (float(strvalues[0]), float(strvalues[1]))
 
-
 def read_timeseries(path):  # returns a list of (time, value) tuples
     ts_file= open(path) 
     timeseries= list()

@@ -1,5 +1,8 @@
 # common interface for finding anomalies
 import os, sys
+if __name__=='__main__':
+    sys.path.insert(0, "..")
+
 import core.hmm as hmm
 import core.naive as naive
 import scripts.features as features
@@ -57,11 +60,28 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
         return match.machine_majority_vote(path, float(percent)/100) 
     elif algorithm=="tmv":
         return match.ts_majority_vote(path, float(percent)/100)
+    elif algorithm== "optimal":
+        anomaly=  match.optimize_timeseries(path, mul_dev= 3, percent= 0.5, top= None)[0]
+        return anomaly
     else:
         raise Exception("Unknown algorithm attribute in gateway.py")
     
+class algo_iter:
+    def __init__(self, methods= ["naive", "hmm"], features=[None, "mean", "var", "deviance"], window_sizes= [15, 30]):    
+        self.algo_list= [(x, y, z) for z in window_sizes for y in features for x in methods]
+        self.counter= -1
+    
+    def __iter__(self):
+        return self
+
+    def next(self):
+        self.counter+= 1
+        if self.counter < len(self.algo_list):
+            return self.algo_list[self.counter]
+        else:
+            raise StopIteration
 
 if __name__=="__main__":
     path= os.path.join(os.getcwd(), sys.argv[1])
-    print get_anomalies(path, "hmm")
+    print get_anomalies(path, "optimal")
 

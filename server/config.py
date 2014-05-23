@@ -3,6 +3,45 @@
 import os
 import json
 
+class paths:
+    def __init__(self, datadir= "../data"): 
+        self.SERVER_DIR = os.path.abspath(os.path.dirname(__file__))
+
+        self.BASE_DIR = os.path.abspath(os.path.join(SERVER_DIR, os.pardir))
+
+        self.SCRIPTS_DIR = os.path.join(self.BASE_DIR, "scripts")
+
+        self.CORE_DIR = os.path.join(self.BASE_DIR, "core")
+
+        self.DATA_DIR = os.path.join(os.getcwd(), datadir)
+
+        self. DATA_BASE_DIR= os.path.join(self.BASE_DIR, "data")
+
+        self.TS_DIR = os.path.join(self.DATA_DIR, "timeseries")
+
+        self.TS_JSON_DIR = os.path.join(self.DATA_DIR, "timeseries_json")
+
+        self.ANOMALIES_DIR = os.path.join(self.DATA_DIR, "anomalies")
+
+        self.ANNOTATIONS_DIR = os.path.join(self.DATA_DIR, "annotations")
+
+        self.MACHINE_WTS_DIR = os.path.join(self.DATA_DIR, "machine_weights")
+
+
+    def set_datadir(datapath):  # datapath relative to cwd
+
+        self.DATA_DIR = os.path.join(os.getcwd(), datapath)
+
+        self.TS_DIR = os.path.join(self.DATA_DIR, "timeseries")
+
+        self.TS_JSON_DIR = os.path.join(self.DATA_DIR, "timeseries_json")
+
+        self.ANOMALIES_DIR = os.path.join(self.DATA_DIR, "anomalies")
+
+        self.ANNOTATIONS_DIR = os.path.join(self.DATA_DIR, "annotations")
+
+        self.MACHINE_WTS_DIR = os.path.join(self.DATA_DIR, "machine_weights")
+
 
 SERVER_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -26,7 +65,7 @@ ANNOTATIONS_DIR = os.path.join(DATA_DIR, "annotations")
 
 MACHINE_WTS_DIR = os.path.join(DATA_DIR, "machine_weights")
 
-def set_datadir(datapath):   # data_dir_path is relative from server directory
+def set_datadir(datapath):   # data_dir_path is relative to CWD
     global DATA_DIR
     global TS_DIR
     global TS_JSON_DIR
@@ -34,7 +73,7 @@ def set_datadir(datapath):   # data_dir_path is relative from server directory
     global ANNOTATIONS_DIR
     global MACHINE_WTS_DIR
 
-    DATA_DIR = os.path.join(SERVER_DIR, datapath)
+    DATA_DIR = os.path.join(os.getcwd(), datapath)
 
     TS_DIR = os.path.join(DATA_DIR, "timeseries")
 
