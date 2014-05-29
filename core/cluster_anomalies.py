@@ -45,8 +45,8 @@ def cluster_anomalies(paths, n_clusters= 4, n_iter= 75):
         weights.extend([0 for x in range(0, increase_length)])
 
     # find distance matrix
-#    mat= [[cluster.non_normalized_distance(weights1, weights2) for weights2 in weight_lists] for weights1 in weight_lists]
-#    pprint.pprint(mat) 
+    #    mat= [[cluster.non_normalized_distance(weights1, weights2) for weights2 in weight_lists] for weights1 in weight_lists]
+    #    pprint.pprint(mat) 
     # return cluster.cluster(weight_lists, n_clusters, n_iter, distance_func= cluster.non_normalized_distance)
 
     #cluster using numpy/ scipy

@@ -1,4 +1,4 @@
-import os, sys, json, pprint
+import os, sys, json, pprint, math
 
 if __name__=='__main__':
     sys.path.insert(0, "..")
@@ -46,7 +46,7 @@ def ts_majority_vote(path, ratio= 0.005):
     return final_anomalies 
 
 
-def optimize_timeseries(path, mul_dev= 3, percent= 0.5, top= None):      # returns anomalies sorted by weights and not time
+def optimize_timeseries(path, mul_dev= 3, percent= 0.5, alpha = 0.7, top= None):      # returns anomalies sorted by weights and not time
     anomaly_dict= dict()
     anomaly_list= list()
     for algo in gateway.algo_iter():
@@ -58,7 +58,8 @@ def optimize_timeseries(path, mul_dev= 3, percent= 0.5, top= None):      # retur
     weights= anomalies_to_expweights(anomaly_list)
     max_overlap= -1
     for algo in gateway.algo_iter():
-        overlap= anomaly_weight_overlap(anomaly_dict[algo], weights)
+        # overlap penalized exponentially wrt length of anomaly list
+        overlap= anomaly_weight_overlap(anomaly_dict[algo], weights)/math.exp(alpha * len(anomaly_dict[algo]))
         #print algo, overlap
         if max_overlap < overlap:
             max_overlap= overlap

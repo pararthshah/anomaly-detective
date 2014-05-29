@@ -1,6 +1,7 @@
 import math
 
-def anomalies_to_weights(anomaly_list):
+
+def anomalies_to_weights(anomaly_list):     # UNUSED- anomalies_to_expweights preferred
     # TODO: try exponential taper off, instead of discrete one
     max_time= 0
     for anomalies in anomaly_list:
@@ -28,31 +29,39 @@ def anomalies_to_expweights(anomaly_list, alpha= 500):
             max_time= anomalies[-1][1]
     max_time= int(max_time)
     weights= [0]*max_time   # hope that times start from 0
-        
+    
     for anomalies in anomaly_list:
         for start, end in anomalies:
             for cutoff, interval in zip(cutoffs, intervals):
                 for i in range(max(0, int(start) - interval), min(max_time, int(end) + interval)):
                     weights[i]+= cutoff
-
     return weights
-        
 
-def anomaly_weight_overlap(anomalies, weights, alpha= 0.7):
+def anomalies_to_onesided_expweights(anomalies, alpha= 1000):   # accepts only a single anomaly list, not a list of lists
+    cutoffs= [1, 0.7, 0.5, 0.2, 0.1]
+    # find cutoff_intervals
+    intervals= list()
+    for cutoff in cutoffs:
+        intervals.append(-int(math.log(cutoff) * alpha))
+    max_time= int(anomalies[-1][1])
+    weights= [0]*max_time   # hope that times start from 0
+        
+    for start, end in anomalies:
+        for cutoff, interval in zip(cutoffs, intervals):
+            for i in range(int(start), min(max_time, int(end) + interval)):
+                weights[i]+= cutoff
+    return weights
+
+def anomaly_weight_overlap(anomalies, weights): # not normalized!
     if len(anomalies)==0:
         return 0            # how to avoid penalizing for ts without anomalies?
     overlap= 0
     for anomaly in anomalies:
         if anomaly[0] < len(weights):
-            overlap+= sum(weights[max(int(anomaly[0]), len(weights)-1) : max(int(anomaly[1]), len(weights))])
+            overlap+= sum(weights[min(int(anomaly[0]), len(weights)-1) : min(int(anomaly[1]), len(weights))])
         else:
             break
-    #return float(overlap)/len(anomalies)
-    #return float(overlap)/total_time(anomalies)
-    #return float(overlap)/(len(anomalies)*len(anomalies))
-    #return float(overlap)/math.pow(len(anomalies), 1.5)
-    #return float(overlap)/(total_time(anomalies) * len(anomalies) * len(anomalies))  # penalize for number of anomalies?
-    return float(overlap)/math.exp(alpha * len(anomalies))
+    return float(overlap)
 
 
 def arrange_anomalies(anomalies, weights):  # arranges anomalies by amount of overlap (or should it be average overlap?)

@@ -56,7 +56,7 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
         value_likelihoods= hmm.get_likelihoods(values, n_states)
         likelihoods= [mean_likelihoods[i] + var_likelihoods[i] + value_likelihoods[i] for i in range(0, len(values))]
         likelihoods= de_bucketize(times, likelihoods, bucket_size)
-        return hmm.likelihoods_to_anomalies(times, likelihoods, float(percent)/100)
+        return anomalies.min_anomalies(times, likelihoods, float(percent)/100)
     elif algorithm=="mv":
         return match.machine_majority_vote(path, float(percent)/100) 
     elif algorithm=="tmv":
@@ -84,5 +84,5 @@ class algo_iter:
 
 if __name__=="__main__":
     path= os.path.join(os.getcwd(), sys.argv[1])
-    print get_anomalies(path, "hmm")
+    print get_anomalies(path, "combined_hmm")
 

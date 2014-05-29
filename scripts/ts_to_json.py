@@ -9,7 +9,7 @@ def convert(inpath, names, outpath):
 	if not os.path.exists(outpath):
 		os.makedirs(outpath)
 	index= 0
-	for (name, series) in read_folder(inpath, names):
+	for (name, series) in read_folder(inpath, names):   # TODO- change series to (times, values)
 		print index
 		index+= 1
 		outname = name[:-5] + ".json"
