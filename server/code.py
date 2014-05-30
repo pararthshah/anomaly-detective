@@ -95,7 +95,7 @@ class Likelihoods:
         dataset = params.dataset
         filename = params.machine + "-" + params.metric + ".data"
         path = os.path.join(config.TS_DIR, filename)
-        likelihoods = get_likelihoods("cascade", path)
+        likelihoods = get_likelihoods("cascade", path, base=int(params.base), levels=int(params.levels))
         return json.dumps(likelihoods)
 
 class Annotations:

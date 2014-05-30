@@ -92,7 +92,7 @@ def compute_likelihoods(times, values, base=512, levels=1):
         if index+window_size > num_points or index-window_size < 0:
             continue
         c_win = (index, index+window_size)
-        p_win = (max(index-4*window_size, 0), index)
+        p_win = (max(index-8*window_size, 0), index)
         curr_ks = compute_ks(values, c_win, p_win)[1]
         if curr_ks == 0.0:
             curr_ks = 100

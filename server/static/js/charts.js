@@ -346,9 +346,13 @@ $(document).ready(function() {
     });
         
     $("#likelihoods").click(function(event) {
+        var baseWindow = $("#params-cascade-base").val();
+        var cascadeLevels = $("#params-cascade-levels").val();
+        var selectedMetric = getSelectedMetric();
+        var params = $.extend(selectedMetric, { "base" : baseWindow, "levels": cascadeLevels });
         $.ajax({
             url : '/likelihoods',
-            data : getSelectedMetric()
+            data : params
         })
         .done(function(response) {
             likelihoodData = convertTSData(response);

@@ -91,10 +91,10 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
     else:
         raise Exception("Unknown algorithm attribute in gateway.py")
     
-def get_likelihoods(name, path):
+def get_likelihoods(name, path, base=512, levels=4):
     if name == "cascade":
         times, values = read_lists(path)
-        likelihoods = cascade.compute_likelihoods(times, values, 512)
+        likelihoods = cascade.compute_likelihoods(times, values, base, levels)
         return likelihoods
     else:
         raise Exception("Unknown algorithm attribute in gateway.py")    
