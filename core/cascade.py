@@ -86,7 +86,7 @@ def compute_anomalies(times, values, base=512, levels=1):
 def compute_likelihoods(times, values, base=512, levels=1):
     num_points = len(times)
     window_size = base
-    jump_size = window_size/2
+    jump_size = window_size
     likelihoods = []
     for index in range(0, num_points, jump_size):
         if index+window_size > num_points or index-window_size < 0:
