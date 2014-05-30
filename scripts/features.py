@@ -25,6 +25,7 @@ def f_slope(times, values):        # given a series (time value pairs), returns 
     slope= list()
     for index in range(0, len(values)-1):
         slope.append(float(values[index+1] - values[index]))
+    slope.append(slope[-1])
     return slope
 
 def create_window_features(values, feature_func, window_size):

@@ -2,19 +2,20 @@
 import os, sys
 if __name__=='__main__':
     sys.path.insert(0, "..")
-
+from numpy import array, std
 import core.hmm as hmm
 import core.naive as naive
 import scripts.features as features
 import core.anomalies as anomalies
 from scripts.read_timeseries import read_lists
 from scripts.ts_functions import bucketize, de_bucketize
-from anomalies import max_anomalies
+from anomalies import max_anomalies, ordered_min_anomalies 
 import match
 
 def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_states= 10, percent=2):
     # mul_dev to be used for naive, percent for hmm. TODO: Use common metric for both.
     times, values= read_lists(path)
+    print len(times), len(values)
 
     if feature== "mean":
         flist= features.create_window_features(values, features.f_mean, window_size)
@@ -47,16 +48,36 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
 
     elif algorithm=="combined_hmm":
         bucket_size= 15
+        if len(values) < 4000:  # hardcoded hack!
+            bucket_size= 0
         times= times[window_size:len(times)-window_size]
+        # mean
         flist= bucketize(times, features.create_window_features(values, features.f_mean, window_size), bucket_size)
         mean_likelihoods= hmm.get_likelihoods(flist, n_states)
+        # var
         flist= bucketize(times, features.create_window_features(values, features.f_var, window_size), bucket_size)
         var_likelihoods= hmm.get_likelihoods(flist, n_states)
+        # deviance
+        flist= bucketize(times, features.create_window_features(values, features.f_deviance, window_size), bucket_size)
+        dev_likelihoods= hmm.get_likelihoods(flist, n_states)
+        # slope
+        #flist= bucketize(times, features.create_window_features(values, features.f_deviance, window_size), bucket_size)
+        flist= features.f_slope(times, values)
+        flist= bucketize(times, flist[window_size:len(flist)-window_size], bucket_size)
+        slope_likelihoods= hmm.get_likelihoods(flist, n_states)
+        # actual values
         values= bucketize(times, values[window_size:len(values)- window_size], bucket_size)
         value_likelihoods= hmm.get_likelihoods(values, n_states)
-        likelihoods= [mean_likelihoods[i] + var_likelihoods[i] + value_likelihoods[i] for i in range(0, len(values))]
+        mean_std= std(array(mean_likelihoods))
+        var_std= std(array(var_likelihoods))
+        dev_std= std(array(dev_likelihoods))
+        slope_std= std(array(slope_likelihoods))
+        value_std= std(array(value_likelihoods))
+        likelihoods= [mean_likelihoods[i]/mean_std + var_likelihoods[i]/var_std + dev_likelihoods[i]/dev_std + slope_likelihoods[i]/slope_std +  value_likelihoods[i]/value_std for i in range(0, len(values))]
         likelihoods= de_bucketize(times, likelihoods, bucket_size)
-        return anomalies.min_anomalies(times, likelihoods, float(percent)/100)
+        ordered_anomalies, overlaps =  anomalies.ordered_min_anomalies(times, likelihoods, ratio= 0.005)
+        return sorted(anomalies.min_cutoff(ordered_anomalies, overlaps))
+        #return anomalies.min_anomalies(times, likelihoods, ratio= 0.005)
     elif algorithm=="mv":
         return match.machine_majority_vote(path, float(percent)/100) 
     elif algorithm=="tmv":

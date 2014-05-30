@@ -13,12 +13,11 @@ def find_corr_matrix(dataset):
     for index, path in enumerate([os.path.join(paths.TS_DIR, f) for f in os.listdir(paths.TS_DIR)]):
         anomaly_dict[path]= gateway.get_anomalies(path, "combined_hmm", None, percent= 0.5)
         #print(path)
-        print index
-        print(anomaly_dict[path])
 
     paths= list()
     cor_mat= list()
     for i, path in enumerate(anomaly_dict):
+        print i, anomaly_dict[path]
         paths.append(path)
         cor_mat.append(list())
         weights= anomalies_to_onesided_expweights(anomaly_dict[path])
