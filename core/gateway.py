@@ -91,6 +91,14 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
     else:
         raise Exception("Unknown algorithm attribute in gateway.py")
     
+def get_likelihoods(name, path):
+    if name == "cascade":
+        times, values = read_lists(path)
+        likelihoods = cascade.get_likelihoods(times, values, 512)
+        return likelihoods
+    else:
+        raise Exception("Unknown algorithm attribute in gateway.py")    
+
 class algo_iter:
     def __init__(self, methods= ["naive", "hmm"], features=[None, "mean", "var", "deviance"], window_sizes= [15, 30]):    
         self.algo_list= [(x, y, z) for z in window_sizes for y in features for x in methods]

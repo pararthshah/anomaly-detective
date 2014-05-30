@@ -83,6 +83,25 @@ def compute_anomalies(times, values, base=512, levels=1):
     print "\n".join(map(lambda x: getDate(times[x[0]]) + ", " + getDate(times[x[1]]) + ": " + str(x[2]) + " " + str(x[3]), candidates))
     #return combine_likelihoods(times, candidates, 3*levels)
 
+def compute_likelihoods(times, values, base=512, levels=1):
+    num_points = len(times)
+    window_size = base
+    jump_size = window_size/2
+    likelihoods = []
+    for index in range(0, num_points, jump_size):
+        if index+window_size > num_points or index-window_size < 0:
+            continue
+        c_win = (index, index+window_size)
+        p_win = (max(index-4*window_size, 0), index)
+        curr_ks = compute_ks(values, c_win, p_win)[1]
+        if curr_ks == 0.0:
+            curr_ks = 100
+        else:
+            curr_ks = -1*math.log10(curr_ks)
+        for i in range(index,index+window_size):
+            likelihoods.append([times[i], curr_ks])
+    return likelihoods
+
 def compute_anomalies1(times, values, base=512, levels=1):
     num_points = len(times)
     window_size = base
