@@ -20,31 +20,33 @@ $def with (name)
         <!-- Machine/metric form begins-->
         <form role="form" class="form-inline" id="form-metric">
             <div class="form-group">
+                <label form="metric-interval">Dataset: </label>
+                <select class="form-control" id="dataset">
+                    <option value="week1">1 Week</option>
+                    <option value="week4">4 Weeks</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-get-list">Load</button>
+            <div class="preloader" id="list-preloader" style="display:none"></div>
+            <span class="label label-danger" id="list-error" style="display:none">An error occurred.</span>
+            <div class="form-group">
                 <label for="machine-name" class="control-label">Machine:</label>
                 <select class="form-control" id="machine-name" disabled>
                     <!--Rendered through JS-->
                 </select>
             </div>
 
-						<div style="display:block; margin-top:10px;">
-							<div class="form-group">
-									<label for="metric-name" class="control-label">Metric:</label>
-									<select class="form-control" id="metric-name" disabled>
-											<!--Rendered through JS-->
-										</select>
-							</div>
-							<div class="form-group">
-									<label form="metric-interval">Dataset: </label>
-									<select class="form-control" id="dataset">
-											<!--Rendered through JS-->
-											<option value="1">1 Week</option>
-											<option value="4">4 Weeks</option>
-									</select>
-							</div>
-							<button type="button" class="btn btn-primary" id="btn-get-metric">Load</button>
-							<div class="preloader" id="load-preloader" style="display:none"></div>
-							<span class="label label-danger" id="load-error" style="display:none">An error occurred.</span>
-						</div>
+			<div style="display:block; margin-top:10px;">
+				<div class="form-group">
+						<label for="metric-name" class="control-label">Metric:</label>
+						<select class="form-control" id="metric-name" disabled>
+								<!--Rendered through JS-->
+							</select>
+				</div>
+				<button type="button" class="btn btn-primary" id="btn-get-metric">Load</button>
+				<div class="preloader" id="load-preloader" style="display:none"></div>
+				<span class="label label-danger" id="load-error" style="display:none">An error occurred.</span>
+			</div>
         </form>
         <!-- machine/mertric form ends-->
 
@@ -64,6 +66,7 @@ $def with (name)
                                 <div class="form-group">
 																	<h4 for="algorithm">Algorithm</h4>
                                     <select id="algorithm-name" class="form-control">
+                                        <option value="CASCADE">Cascading Windows</option>
                                         <option value="HMM">Hidden Markov Model</option>
                                         <option value="MA">Moving Average</option>
                                         <option value="NAIVE">Naive</option>
@@ -87,7 +90,7 @@ $def with (name)
 																	<!-- Parameters for Moving Average end-->
 
 																	<!--Parametes for HMM begin-->
-																	<div id="params-hmm">
+																	<div id="params-hmm" style="display:none">
 																		<div class="form-group">
 																			<label>Number of states</label>
 																			<input type="text" class="form-control" id="params-hmm-states" value="10" />
@@ -98,14 +101,26 @@ $def with (name)
 																		</div>
 																	</div>
 																	<!-- Parameters for HMM end-->
-																	<!--Parametes for NAIVE begin-->
+																	<!--Parameters for NAIVE begin-->
 																	<div id="params-naive" style="display:none">
 																			<div class="form-group">
 																				<label>Deviation Factor</label>
 																				<input type="text" class="form-control" id="params-naive-deviation" value="3" />
 																			</div>
 																	</div>
-																	<!--Parametes for NAIVE end-->
+																	<!--Parameters for NAIVE end-->
+                                                                    <!--Parameters for CASCADE begin-->
+                                                                    <div id="params-cascade">
+                                                                        <div class="form-group">
+                                                                            <label>Base Window Size</label>
+                                                                            <input type="text" class="form-control" id="params-cascade-base" value="512" />
+                                                                        </div>
+                                                                        <div class="form-group">
+                                                                            <label>Levels</label>
+                                                                            <input type="text" class="form-control" id="params-cascade-levels" value="1" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <!--Parameters for CASCADE end-->
 													</div>
 													<!--Algorithm parameters end-->
 													<button type="button" id="algorithm-submit" class="btn btn-primary">Submit</button>

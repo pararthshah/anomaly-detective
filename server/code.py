@@ -4,6 +4,7 @@ import web
 import os, sys, time
 import json
 import config
+import traceback
 
 #DATAPATH= "../data/dataset1"    
 sys.path.insert(0, config.BASE_DIR)
@@ -31,9 +32,13 @@ class Index:
 
 class Metrics:
     def GET(self):
-        params = web.input(name="important")
+        params = web.input(dataset="week1")
         try:
-            imp_file = open(os.path.join(config.DATA_DIR, params.name+".json"))    
+            if params.dataset == "week1":
+                config.set_datadir("../data/week1")
+            elif params.dataset == "week4":
+                config.set_datadir("../data/week4")
+            imp_file = open(os.path.join(config.DATA_DIR, "important.json"))    
             imp_json = imp_file.read()
             return imp_json
         except Exception, e:
@@ -43,8 +48,7 @@ class Data:
     def GET(self):
         params = web.input()
         web.header('Content-Type', 'application/json')
-        dataset = int(params.dataset)
-        # Change root folder based on dataset (can be 1 or 4)
+        dataset = params.dataset
         filename = params.machine + "-" + params.metric + ".data"
         path = os.path.join(config.TS_JSON_DIR, filename)
         with open(path) as str_file:
@@ -70,13 +74,15 @@ class Anomalies:
                 #anomalies= get_anomalies(path, "optimal", None, percent= float(params.percentage))
                 anomalies= get_anomalies(path, "combined_hmm", None, percent= float(params.percentage))
                 print anomalies
+            elif params.method=='CASCADE':
+                anomalies= get_anomalies(path, "cascade", None, base=int(params.base), levels=int(params.levels))
                 return json.dumps(anomalies)
             elif params.method== 'NAIVE':
                 anomalies= get_anomalies(path, "naive", "var", window_size= 30)
                 return json.dumps(anomalies)
         except Exception, e:
-            print "Exception:"
-            print e
+            print "Exception:", e
+            traceback.print_exc()
             return str(e)
 
 class Annotations:
@@ -90,6 +96,6 @@ class Annotations:
         return "Annotations!"
 
 if __name__ == "__main__": 
-    #config.set_datadir(DATAPATH)    # remove to keep data path as ../data
+    config.set_datadir("../data/week1")    # remove to keep data path as ../data
     app = web.application(urls, globals())
     app.run()

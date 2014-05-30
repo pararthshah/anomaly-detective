@@ -16,7 +16,8 @@ var anomalyColor='#EE454B';
 var algorithmNameCache = {
     "MA" : "MA",
     "HMM" : "HMM",
-    "NAIVE" : "NAIVE"
+    "NAIVE" : "NAIVE",
+    "CASCADE" : "CASCADE"
 }
 
 /*
@@ -246,6 +247,38 @@ $(document).ready(function() {
 
     metricChart = new MetricChart($("#chart-container").highcharts());
 
+    $("#btn-get-list").click(function() { 
+        var dataset = $('#dataset').val();
+        if (dataset == "week4") {
+            minTime = 0;
+            dateStart.setUTCSeconds(0);
+        } else {
+            minTime = 1395723600;
+            dateStart.setUTCSeconds(minTime);
+        }
+        // show preloader
+        $("#list-preloader").show("slow");
+        $("#list-error").hide();
+
+        // fetch data from server
+        $.ajax({
+            url: "/metrics", 
+            dataType: 'json',
+            data: { 'dataset' : dataset },
+            success: function(response) {
+                metricsData = response;
+                addSelectOptions("#machine-name", response, true);
+                showMetricsForMachine($("#machine-name").val());
+                $("#list-preloader").hide();
+                $("#list-error").hide();
+            },
+            error: function(response) {
+                $("#list-error").show("slow");
+                $("#list-preloader").hide();
+            }
+        });
+    });
+
     $("#btn-get-metric").click(function() { 
         var selectedMetric = getSelectedMetric();
         var dataset = $('#dataset').val();
@@ -310,8 +343,13 @@ $(document).ready(function() {
         else if (selectedAlgorithm === algorithmNameCache["NAIVE"]) {
             var deviationFactor = $("#params-naive-deviation").val();
             var method = algorithmNameCache["NAIVE"];
-            console.log(deviationFactor);
             params = $.extend(selectedMetric, { "deviation_factor" : deviationFactor, "method" : method });    
+        } 
+        else if (selectedAlgorithm === algorithmNameCache["CASCADE"]) {
+            var cascadeLevels = $("#params-cascade-levels").val();
+            var baseWindow = $("#params-cascade-base").val();
+            var method = algorithmNameCache["CASCADE"];
+            params = $.extend(selectedMetric, { "levels" : cascadeLevels, "base" : baseWindow, "method" : method });    
         }
         else {
             throw new Exception('Not Supported');    

@@ -11,8 +11,9 @@ from scripts.read_timeseries import read_lists
 from scripts.ts_functions import bucketize, de_bucketize
 from anomalies import max_anomalies, ordered_min_anomalies 
 import match
+import core.cascade as cascade
 
-def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_states= 10, percent=2):
+def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_states= 10, percent=2, base=512, levels=1):
     # mul_dev to be used for naive, percent for hmm. TODO: Use common metric for both.
     times, values= read_lists(path)
     print len(times), len(values)
@@ -83,8 +84,10 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
     elif algorithm=="tmv":
         return match.ts_majority_vote(path, float(percent)/100)
     elif algorithm== "optimal":
-        anomaly=  match.optimize_timeseries(path, mul_dev= 3, percent= 0.5, top= None)[0]
+        anomaly=  match.optimize_timeseries(path, mul_dev= 3, percent= 1.5, top= None)[0]
         return anomaly
+    elif algorithm == "cascade":
+        return cascade.compute_anomalies1(times, values, base=base, levels=levels)
     else:
         raise Exception("Unknown algorithm attribute in gateway.py")
     
@@ -105,5 +108,5 @@ class algo_iter:
 
 if __name__=="__main__":
     path= os.path.join(os.getcwd(), sys.argv[1])
-    print get_anomalies(path, "combined_hmm")
+    print get_anomalies(path, "cascade", base=64, levels=7)
 

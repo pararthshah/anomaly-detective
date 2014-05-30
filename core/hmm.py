@@ -7,6 +7,7 @@ import core.cluster as cluster
 from scripts.read_timeseries import read_timeseries, read_lists
 from scripts.ts_functions import bucketize
 from core.anomalies import min_anomalies
+from core.anomalies import index_to_interval
 #from scripts.features import create_window_features
 
 def emission_prob(value, cluster_mean, cluster_var):

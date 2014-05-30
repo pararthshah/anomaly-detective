@@ -39,8 +39,8 @@ for line in important:
 
 output_json = json.dumps(output, sort_keys=True, indent=4)
 
-#with open(output_file, 'w') as f:
-#    f.write(output_json)
+with open(output_file, 'w') as f:
+   f.write(output_json)
 
 
 
