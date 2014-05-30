@@ -13,6 +13,7 @@ sys.path.insert(0, config.BASE_DIR)
 
 from core import hmm_interface
 from core.gateway import get_anomalies
+from core.gateway import get_likelihoods
 from scripts.ma import detect_SMA
 
 urls = (
@@ -20,7 +21,8 @@ urls = (
     '/metrics', 'Metrics',
     '/data', 'Data',
     '/anomalies', 'Anomalies',
-    '/annotations', 'Annotations'
+    '/annotations', 'Annotations',
+    '/likelihoods', 'Likelihoods'
 )
 render = web.template.render('templates')
 
@@ -74,6 +76,7 @@ class Anomalies:
                 #anomalies= get_anomalies(path, "optimal", None, percent= float(params.percentage))
                 anomalies= get_anomalies(path, "combined_hmm", None, percent= float(params.percentage))
                 print anomalies
+                return json.dumps(anomalies)
             elif params.method=='CASCADE':
                 anomalies= get_anomalies(path, "cascade", None, base=int(params.base), levels=int(params.levels))
                 return json.dumps(anomalies)
@@ -84,6 +87,16 @@ class Anomalies:
             print "Exception:", e
             traceback.print_exc()
             return str(e)
+
+class Likelihoods:
+    def GET(self):
+        params = web.input()
+        web.header('Content-Type', 'application/json')
+        dataset = params.dataset
+        filename = params.machine + "-" + params.metric + ".data"
+        path = os.path.join(config.TS_DIR, filename)
+        likelihoods = get_likelihoods("cascade", path)
+        return json.dumps(likelihoods)
 
 class Annotations:
     def POST(self):
