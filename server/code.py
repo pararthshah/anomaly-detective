@@ -42,7 +42,7 @@ class Metrics:
             imp_json = imp_file.read()
             return imp_json
         except Exception, e:
-            return str(e)
+            raise web.notfound(str(e))
 
 class Data:
     def GET(self):
