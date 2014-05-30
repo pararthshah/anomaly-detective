@@ -28,6 +28,7 @@ function MetricChart(chart) {
     this.id = metricChartId;
     this.anomalies =  [];
     this.anomaliesId = [];
+    this.metricStats = {};
 }
 
 /*
@@ -65,6 +66,7 @@ function updateStats(data) {
     mean = mean/n;   
     variance = variance/(n-1);
 
+
     $("#stats-min").html(miny.toFixed(2));
     $("#stats-max").html(maxy.toFixed(2));
     $("#stats-range").html((maxy - miny).toFixed(2));
@@ -77,8 +79,9 @@ function updateStats(data) {
  */
 function getSelectedMetric() {
     return {
-        "machine" : $("#machine-name").val(),
-        "metric" : $("#metric-name").val()
+        machine : $("#machine-name").val(),
+        metric : $("#metric-name").val(),
+        dataset : $('#dataset').val()
     }
 }
 
@@ -177,6 +180,10 @@ function convertTSData(tsData) {
     return tsData;
 }
 
+function convertLikData(likData) {
+    likData = convertTSData(likData);
+}
+
 /*
  * Converts the anomaly data (list of tuples (x,y)) to the required format by doing the following:
  * Convert UNIX epoch to milliseconds by multiplying each x and y value with 1000.
@@ -191,6 +198,8 @@ function convertAnomalyData(anomalyData) {
     return convertedAnomalyData;
 }
 
+var test;
+
 $(document).ready(function() {
     // Create the chart
     $('#chart-container').highcharts('StockChart', {
@@ -198,35 +207,42 @@ $(document).ready(function() {
                     type:'line',
                     zoomType: 'x'
             },
-            rangeSelector: {
+             rangeSelector: {
                 inputEnabled: $('#chart-container').width() > 480,
-                        buttons: [{
-                                type: 'second',
-                                count: 10,
-                                text: '10s'
-                        }, {
-                                type: 'minute',
-                                count: 1,
-                                text: '1m'
-                        }, {
-                                type: 'minute',
-                                count: 60,
-                                text: '1h'
-                        }, {
-                                type: 'day',
-                                count: 1,
-                                text: '1d'
-                        },{
-                                type: 'all',
-                                text: 'All'
-                        }],
-                        selected: 5
-                },
-        yAxis: {
+                    buttons: [{
+                            type: 'second',
+                            count: 10,
+                            text: '10s'
+                    }, {
+                            type: 'minute',
+                            count: 1,
+                            text: '1m'
+                    }, {
+                            type: 'minute',
+                            count: 60,
+                            text: '1h'
+                    }, {
+                            type: 'day',
+                            count: 1,
+                            text: '1d'
+                    },{
+                            type: 'all',
+                            text: 'All'
+                    }],
+                    selected: 5
+        },
+        yAxis: [{
             title: {
                 text: 'Value'
             }
-        },
+        }, 
+        {
+            showEmpty : true,
+            opposite: true,
+            title : {
+                text : 'Likelihood'
+            }
+        }],
         xAxis: {
             title: {
                 text: 'Timestamp'
@@ -241,8 +257,15 @@ $(document).ready(function() {
         series: [{
                     name: 'Metric',
                     id: metricChartId,
-                    pointStart: dateStart
-            }]
+                    pointStart: dateStart,
+                    yAxis : 0
+            }],
+        navigator : {
+            enabled : true,
+            series : {
+                id : 'navigator'
+            }
+        }
     });
 
     metricChart = new MetricChart($("#chart-container").highcharts());
@@ -321,7 +344,21 @@ $(document).ready(function() {
     $("#machine-name").change(function(event) { 
         showMetricsForMachine($(this).val())
     });
-
+        
+    $("#likelihoods").click(function(event) {
+        $.ajax({
+            url : '/likelihoods',
+            data : getSelectedMetric()
+        })
+        .done(function(response) {
+            likelihoodData = convertTSData(response);
+            metricChart.chart.addSeries( { data : likelihoodData, yAxis : 1, id: 'likelihood', 
+                    name : 'Likelihood', color: 'black'});
+        })
+        .fail(function(response) {
+            console.log(response);
+        });
+    });
     // Fetch anomalies
     $("#algorithm-submit").click(function(event) { 
         var selectedAlgorithm = $("#algorithm-name").val();

@@ -9,6 +9,7 @@ $def with (name)
         <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
         <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
         <script src="http://code.highcharts.com/stock/highstock.js"></script>
+				<script type="text/javascript" src="http://www.highcharts.com/samples/data/three-series-1000-points.js"></script>
         <!-- Move to main.js or something-->
         <script type="text/javascript" src="../static/js/charts.js"></script>
     </head>
@@ -124,6 +125,7 @@ $def with (name)
 													</div>
 													<!--Algorithm parameters end-->
 													<button type="button" id="algorithm-submit" class="btn btn-primary">Submit</button>
+													<button type="button" id="likelihoods" class="btn btn-danger">Get Likelihoods</button>
 													<div class="preloader" id="algorithm-preloader" style="display:none"></div>
 													<span class="label label-danger" id="algorithm-error" style="display:none">An error occurred.</span>
 												</form>
