@@ -49,7 +49,7 @@ def ts_majority_vote(path, ratio= 0.005):
 def optimize_timeseries(path, mul_dev= 3, percent= 0.5, alpha = 0.7, top= None):      # returns anomalies sorted by weights and not time
     anomaly_dict= dict()
     anomaly_list= list()
-    for algo in gateway.algo_iter():
+    for algo in gateway.algo_iter(methods= ["naive"]):
         # TODO: replace with my_dict
         anomaly_list.append(gateway.get_anomalies(path, algo[0], algo[1], percent= percent, mul_dev= mul_dev, window_size= algo[2]))
         anomaly_dict[algo]= anomaly_list[-1]
@@ -57,7 +57,7 @@ def optimize_timeseries(path, mul_dev= 3, percent= 0.5, alpha = 0.7, top= None):
     #final_anomalies= aggregate(anomaly_list)
     weights= anomalies_to_expweights(anomaly_list)
     max_overlap= -1
-    for algo in gateway.algo_iter():
+    for algo in gateway.algo_iter(methods= ["naive"]):
         # overlap penalized exponentially wrt length of anomaly list
         overlap= anomaly_weight_overlap(anomaly_dict[algo], weights)/math.exp(alpha * len(anomaly_dict[algo]))
         #print algo, overlap

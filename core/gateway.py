@@ -2,7 +2,7 @@
 import os, sys
 if __name__=='__main__':
     sys.path.insert(0, "..")
-from numpy import array, std
+from numpy import array, std, mean, absolute, maximum, amax
 import core.hmm as hmm
 import core.naive as naive
 import scripts.features as features
@@ -88,9 +88,48 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
         return anomaly
     elif algorithm == "cascade":
         return cascade.compute_anomalies1(times, values, base=base, levels=levels)
+    elif algorithm== "var_based":
+        s= avg_std(values)
+        print s
+        if s > 0.003:
+            print "combined_hmm"
+            return get_anomalies(path, "combined_hmm", feature, window_size, mul_dev, n_states, percent, base, levels)
+        else:
+            print "optimal"
+            return get_anomalies(path, "optimal", feature, window_size, mul_dev, n_states, percent, base, levels)
     else:
         raise Exception("Unknown algorithm attribute in gateway.py")
     
+def normalized_std(values):
+    numval= array(values)
+    m= mean(numval)
+    for i in range(0, len(values)):
+        numval[i]= numval[i]- m
+    sd= std(numval)
+    for i in range(0, len(values)):
+        numval[i]= numval[i]/sd
+    grad= gradient(numval)
+    return std(grad)
+    
+def avg_std(values, window_size= 10):
+    numval= array(values)
+    m= mean(numval)
+    for i in range(0, len(values)):
+        numval[i]= numval[i]- m
+#    sd= std(numval)
+#    for i in range(0, len(values)):
+#        numval[i]= numval[i]/sd
+    maxnum= amax(absolute(numval))
+    for i in range(0, len(values)):
+        numval[i]= numval[i]/maxnum
+    flist= features.create_window_features(numval.tolist(), features.f_var, window_size)
+    return sum(flist)/len(flist)
+
+def avg_slope(times, values):
+    flist= features.create_window_features(values, features.f_mean, window_size)
+    times= times[window_size:len(times)-window_size]
+    flist= features.f_slope(times, values)      #TODO: bucketize/ smoothen? update: smoothening doesn't work
+
 def get_likelihoods(name, path, base=512, levels=4):
     if name == "cascade":
         times, values = read_lists(path)

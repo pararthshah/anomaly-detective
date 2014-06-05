@@ -119,7 +119,7 @@ def hmm_add(value, A, n_pts, sum_val, sum_sqr, prev_state_prob):
 
 
 def get_likelihoods(series, n_states):      # series is a list of just values- misnomer
-    n_iter= 10  # iterations for initial kmeans
+    n_iter= 40  # iterations for initial kmeans
     n_q= 3      # number of states for which likelihood to be calculated
     # construct initial estimates from complete timeseries
     n_init= len(series)
