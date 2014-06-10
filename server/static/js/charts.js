@@ -207,7 +207,18 @@ $(document).ready(function() {
                     type:'line',
                     zoomType: 'x'
             },
-             rangeSelector: {
+            exporting: {
+                buttons: {
+                    contextButtons: {
+                        menuItems: null,
+                        onclick : function() {
+                            this.exportChart();
+                        }
+                    }
+                },
+                enabled: true
+            },
+            rangeSelector: {
                 inputEnabled: $('#chart-container').width() > 480,
                     buttons: [{
                             type: 'second',
