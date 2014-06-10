@@ -2,13 +2,13 @@
 import os, sys
 if __name__=='__main__':
     sys.path.insert(0, "..")
-from numpy import array, std, mean, absolute, maximum, amax
+from numpy import array, std, mean, absolute, maximum, amax, var
 import core.hmm as hmm
 import core.naive as naive
 import scripts.features as features
 import core.anomalies as anomalies
 from scripts.read_timeseries import read_lists
-from scripts.ts_functions import bucketize, de_bucketize
+from scripts.ts_functions import bucketize, de_bucketize, bucket_iter
 from anomalies import max_anomalies, ordered_min_anomalies 
 import match
 import core.cascade as cascade
@@ -90,7 +90,7 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
     elif algorithm== "var_based":
         s= avg_std(values)
         print s
-        if s > 0.003:
+        if s > 0.0010:
             print "combined_hmm"
             return get_anomalies(path, "combined_hmm", feature, window_size, mul_dev, n_states, percent, base, levels)
         else:
@@ -110,7 +110,7 @@ def normalized_std(values):
     grad= gradient(numval)
     return std(grad)
     
-def avg_std(values, window_size= 10):
+def avg_std(values, window_size= 10, bucket_size= 20):
     numval= array(values)
     m= mean(numval)
     for i in range(0, len(values)):
@@ -121,8 +121,12 @@ def avg_std(values, window_size= 10):
     maxnum= amax(absolute(numval))
     for i in range(0, len(values)):
         numval[i]= numval[i]/maxnum
-    flist= features.create_window_features(numval.tolist(), features.f_var, window_size)
-    return sum(flist)/len(flist)
+    variance= 0
+    n= 0
+    for (start, end) in bucket_iter(bucket_size, len(numval)):
+        variance+= var(numval[start:end])
+        n+= 1
+    return variance/n
 
 def avg_slope(times, values):
     flist= features.create_window_features(values, features.f_mean, window_size)
