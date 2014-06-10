@@ -47,7 +47,7 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
         return naive.get_anomalies_from_series(times, flist, mul_dev)
 
     elif algorithm=="combined_hmm":
-        bucket_size= 15
+        bucket_size= 60
         if len(values) < 4000:  # hardcoded hack!
             bucket_size= 0
         times= times[window_size:len(times)-window_size]
@@ -86,7 +86,7 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
         anomaly=  match.optimize_timeseries(path, mul_dev= 3, percent= 1.5, top= None)[0]
         return anomaly
     elif algorithm == "cascade":
-        return cascade.compute_anomalies2(times, values, base=base, levels=levels)
+        return cascade.compute_anomalies1(times, values, base=base, levels=levels)
     elif algorithm== "var_based":
         s= avg_std(values)
         print s
@@ -158,5 +158,5 @@ class algo_iter:
 
 if __name__=="__main__":
     path= os.path.join(os.getcwd(), sys.argv[1])
-    print get_anomalies(path, "cascade", base=64, levels=7)
+    print get_anomalies(path, "cascade", base=256, levels=1)
 
