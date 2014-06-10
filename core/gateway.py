@@ -86,7 +86,7 @@ def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_st
         anomaly=  match.optimize_timeseries(path, mul_dev= 3, percent= 1.5, top= None)[0]
         return anomaly
     elif algorithm == "cascade":
-        return cascade.compute_anomalies1(times, values, base=base, levels=levels)
+        return cascade.compute_anomalies2(times, values, base=base, levels=levels)
     elif algorithm== "var_based":
         s= avg_std(values)
         print s
