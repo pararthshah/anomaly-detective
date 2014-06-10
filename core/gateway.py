@@ -16,7 +16,6 @@ import core.cascade as cascade
 def get_anomalies(path, algorithm, feature=None, window_size=15, mul_dev=3, n_states= 10, percent=2, base=512, levels=1):
     # mul_dev to be used for naive, percent for hmm. TODO: Use common metric for both.
     times, values= read_lists(path)
-    print len(times), len(values)
 
     if feature== "mean":
         flist= features.create_window_features(values, features.f_mean, window_size)

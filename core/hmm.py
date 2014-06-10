@@ -70,7 +70,7 @@ def hmm_add(value, A, n_pts, sum_val, sum_sqr, prev_state_prob):
         eprob[state]= emission_prob(value, mean , variance)
     
     
-    # now for every j s.t. s(t)= j, compute log of P(o(t) | s(t)= j) * sum_over_i(P(s(t)= j | s(t-1)= i) * P(O(t-1), s(t-1)= j))
+    # now for every j s.t. s(t)= j, compute log of P(o(t) | s(t)= j) * sum_over_i(P(s(t)= j | s(t-1)= i) * P(O(t-1), s(t-1)= i))
     # P(o(t) | s(t)=j) is exp of eprob[j]
     # P(s(t)=j | s(t-1)=i) is A[j][i]
     # P(O(t-1), s(t-1)= i) is exp of prev_state_logprob[i]

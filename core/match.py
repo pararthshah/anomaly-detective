@@ -59,7 +59,10 @@ def optimize_timeseries(path, mul_dev= 3, percent= 0.5, alpha = 0.7, top= None):
     max_overlap= -1
     for algo in gateway.algo_iter(methods= ["naive"]):
         # overlap penalized exponentially wrt length of anomaly list
-        overlap= anomaly_weight_overlap(anomaly_dict[algo], weights)/math.exp(alpha * len(anomaly_dict[algo]))
+        try:
+            overlap= anomaly_weight_overlap(anomaly_dict[algo], weights)/math.exp(alpha * len(anomaly_dict[algo]))
+        except OverflowError:
+            overlap= 0
         #print algo, overlap
         if max_overlap < overlap:
             max_overlap= overlap
