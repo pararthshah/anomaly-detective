@@ -1,4 +1,4 @@
-import sys, os, pprint
+import sys, os, pprint, json
 if __name__=='__main__':
     sys.path.insert(0, "..")
 import server.config as config
@@ -27,8 +27,10 @@ def find_corr_matrix(dataset):
     return paths, cor_mat
 
 if __name__=='__main__':
-    paths, cor_mat= find_corr_matrix(sys.argv[1])
-    pprint.pprint(cor_mat)
-
+    pathlist, cor_mat= find_corr_matrix(sys.argv[1])
+    print pathlist, cor_mat
+    cor_mat= os.path.join(sys.argv[1], "cor_mat")
+    with open(cor_mat, 'w') as outfile:
+        json.dumps((pathlist, cor_mat), outfile)
             
     

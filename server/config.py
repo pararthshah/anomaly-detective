@@ -26,8 +26,7 @@ class paths:
         self.ANNOTATIONS_DIR = os.path.join(self.DATA_DIR, "annotations")
 
         self.MACHINE_WTS_DIR = os.path.join(self.DATA_DIR, "machine_weights")
-
-
+        
     def set_datadir(datapath):  # datapath relative to cwd
 
         self.DATA_DIR = os.path.join(os.getcwd(), datapath)
